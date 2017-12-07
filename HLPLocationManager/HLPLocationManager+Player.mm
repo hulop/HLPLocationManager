@@ -62,10 +62,8 @@ static HLPLocation* replayResetRequestLocation;
     
     self.localizer->resetStatus();
     
-    [processQueue addOperationWithBlock:^{
-        [[HLPLocationManager sharedManager] stop];
-        [self stop];
-    }];
+    [[HLPLocationManager sharedManager] stop];
+    [self stop];
     
     dispatch_queue_t queue = dispatch_queue_create("org.hulop.logreplay", NULL);
     dispatch_async(queue, ^{

@@ -195,7 +195,7 @@ static HLPLocationManager *instance;
 
 - (void)dealloc
 {
-    [self stop];
+    [self _stop];
 }
 
 #pragma mark - public properties
@@ -400,7 +400,7 @@ static HLPLocationManager *instance;
 - (void)restart
 {
     [processQueue addOperationWithBlock:^{
-        [self stop];
+        [self _stop];
         [NSThread sleepForTimeInterval:1.0];
         NSLog(@"Restart,%ld", (long)([[NSDate date] timeIntervalSince1970]*1000));
         [self start];
@@ -416,7 +416,7 @@ static HLPLocationManager *instance;
     }];
 }
 
-- (void)stop
+- (void)_stop
 {
     if (!_isActive) {
         return;
@@ -434,7 +434,15 @@ static HLPLocationManager *instance;
     [motionManager stopAccelerometerUpdates];
     [_clLocationManager stopUpdatingHeading];
     
-    //localizer = nil;
+    localizer.reset();
+    localizer = nil;
+}
+
+- (void)stop
+{
+    [processQueue addOperationWithBlock:^{
+        [self _stop];
+    }];
 }
 
 - (void)resetLocation:(HLPLocation*)loc
