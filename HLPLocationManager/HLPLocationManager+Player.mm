@@ -184,6 +184,9 @@ static HLPLocation* replayResetRequestLocation;
                         Beacons beacons = DataUtils::parseLogBeaconsCSV(logString);
                         std::cout << "LogReplay:" << beacons.timestamp() << ",Beacon," << beacons.size();
                         for(auto& b : beacons){
+                            if(b.rssi()==0.0){
+                                b.rssi(-100);
+                            }
                             std::cout << "," << b.major() << "," << b.minor() << "," << b.rssi();
                         }
                         std::cout << std::endl;

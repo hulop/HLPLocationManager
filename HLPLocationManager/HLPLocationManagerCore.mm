@@ -77,7 +77,8 @@ typedef struct {
     
     shared_ptr<BasicLocalizer> localizer;
     shared_ptr<BasicLocalizerParameters> params;
-    
+    shared_ptr<AltitudeManagerSimple::Parameters> amparams;
+
     CMMotionManager *motionManager;
     CMAltimeter *altimeter;
     
@@ -131,7 +132,7 @@ static HLPLocationManager *instance;
     self = [super init];
     
     localizer = shared_ptr<BasicLocalizer>(new BasicLocalizer());
-    
+    amparams = shared_ptr<AltitudeManagerSimple::Parameters>(localizer->altimeterManagerParameters);
     userData.locationManager = self;
     localizer->updateHandler(functionCalledAfterUpdate, (void*) &userData);
     localizer->logHandler(functionCalledToLog, (void*) &userData);
@@ -286,6 +287,11 @@ static HLPLocationManager *instance;
 - (shared_ptr<BasicLocalizer>) localizer
 {
     return localizer;
+}
+
+- (shared_ptr<AltitudeManagerSimple::Parameters>) amparams
+{
+    return amparams;
 }
 
 - (NSDictionary*) anchor
@@ -1358,6 +1364,28 @@ int dcount = 0;
 - (int) maxTrial { return _property->maxTrial(); }
 @end
 
+@implementation HLPLocationManagerAltimeterManagerParameters {
+    AltitudeManagerSimple::Parameters::Ptr _property;
+}
+- (instancetype) initWithTarget:(AltitudeManagerSimple::Parameters::Ptr)property
+{
+    self = [super init];
+    _property = property;
+    return self;
+}
+- (void)setTimestampIntervalLimit:(long)timestampIntervalLimit { _property->timestampIntervalLimit(timestampIntervalLimit); }
+- (long)timestampIntervalLimit { return _property->timestampIntervalLimit(); }
+
+- (void)setQueueLimit:(int)queueLimit { _property->queueLimit(queueLimit); }
+- (int)queueLimit { return _property->queueLimit(); }
+
+- (void)setWindow:(int)window { _property->window(window); }
+- (int)window { return _property->window(); }
+
+- (void)setStdThreshold:(double)stdThreshold { _property->stdThreshold(stdThreshold); }
+- (double)stdThreshold { return _property->stdThreshold(); }
+@end
+
 @implementation HLPLocationManagerParameters
 
 - (instancetype) initWithTarget:(HLPLocationManager*)target
@@ -1370,6 +1398,7 @@ int dcount = 0;
     _pfFloorTransParams = [[HLPLocationManagerFloorTransitionParameters alloc] initWithTarget:target.params->pfFloorTransParams];
     _locationStatusMonitorParameters = [[HLPLocationManagerLocationStatusMonitorParameters alloc] initWithTarget:target.params->locationStatusMonitorParameters];
     _prwBuildingProperty = [[HLPLocationManagerSystemModelInBuildingProperty alloc] initWithTarget:target.params->prwBuildingProperty];
+    _altimeterManagerParameters = [[HLPLocationManagerAltimeterManagerParameters alloc] initWithTarget:target.amparams];
     return self;
 }
 
@@ -1543,7 +1572,15 @@ int dcount = 0;
 - (int)nBeaconsMinimum {return _target.params->nBeaconsMinimum;}
 
 
-- (void)setUsesAltimeterForFloorTransCheck:(bool) usesAltimeterForFloorTransCheck {_target.params->usesAltimeterForFloorTransCheck = usesAltimeterForFloorTransCheck;}
+- (void)setUsesAltimeterForFloorTransCheck:(bool) usesAltimeterForFloorTransCheck {
+#if TARGET_IPHONE_SIMULATOR
+    _target.params->usesAltimeterForFloorTransCheck = usesAltimeterForFloorTransCheck;
+#else
+    if([CMAltimeter isRelativeAltitudeAvailable]){
+        _target.params->usesAltimeterForFloorTransCheck = usesAltimeterForFloorTransCheck;
+    }
+#endif
+}
 - (bool)usesAltimeterForFloorTransCheck {return _target.params->usesAltimeterForFloorTransCheck;}
 
 - (void)setCoeffDiffFloorStdev:(double)coeffDiffFloorStdev {_target.params->coeffDiffFloorStdev = coeffDiffFloorStdev;}

@@ -118,6 +118,13 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property (readonly) int maxTrial;
 @end
 
+@interface HLPLocationManagerAltimeterManagerParameters : NSObject
+@property long timestampIntervalLimit;
+@property int queueLimit;
+@property int window;
+@property double stdThreshold;
+@end
+
 @interface HLPLocationManagerParameters : NSObject
 
 - (instancetype) initWithTarget:(HLPLocationManager*)target;
@@ -205,6 +212,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 //@property loc::LocationStatusMonitorParameters::Ptr locationStatusMonitorParameters;// = std::make_shared<LocationStatusMonitorParameters>();
 @property (readonly) HLPLocationManagerSystemModelInBuildingProperty *prwBuildingProperty;
 //@property loc::SystemModelInBuildingProperty::Ptr prwBuildingProperty;// = std::make_shared<SystemModelInBuildingProperty>();
+@property (readonly) HLPLocationManagerAltimeterManagerParameters *altimeterManagerParameters;
 
 
 @property HLPLocationManagerRepLocation repLocation;
