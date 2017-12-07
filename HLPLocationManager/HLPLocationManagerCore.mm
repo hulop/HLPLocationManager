@@ -70,7 +70,6 @@ typedef struct {
     double _maxRssiBias;
     double _minRssiBias;
     double _headingConfidenceForOrientationInit;
-    BOOL _applysYawDriftAdjust;
     
     //
     LocalUserData userData;
@@ -360,16 +359,6 @@ static HLPLocationManager *instance;
 - (double)headingConfidenceForOrientationInit
 {
     return _headingConfidenceForOrientationInit;
-}
-
-- (void)setApplysYawDriftAdjust:(BOOL)applysYawDriftAdjust
-{
-    _applysYawDriftAdjust = applysYawDriftAdjust;
-    localizer->applysYawDriftAdjust = applysYawDriftAdjust;
-}
-- (BOOL)applysYawDriftAdjust
-{
-    return _applysYawDriftAdjust;
 }
 
 #pragma mark - public methods
@@ -1297,6 +1286,9 @@ int dcount = 0;
 
 - (void)setUnstableLoop:(long)unstableLoop { _property->unstableLoop(unstableLoop); }
 - (long)unstableLoop { return _property->unstableLoop(); }
+
+//- (void)setDisableStatusChangeOnHeightChanging:(BOOL)disableStatusChangeOnHeightChanging { _property->disableStatusChangeOnHeightChanging(disableStatusChangeOnHeightChanging); }
+//- (BOOL)disableStatusChangeOnHeightChanging { return _property->disableStatusChangeOnHeightChanging(); }
 @end
 
 
@@ -1603,8 +1595,11 @@ int dcount = 0;
 - (double)minRssiBias {return _target.minRssiBias;}
 - (void)setHeadingConfidenceForOrientationInit:(double)headingConfidenceForOrientationInit {_target.headingConfidenceForOrientationInit = headingConfidenceForOrientationInit;}
 - (double)headingConfidenceForOrientationInit {return _target.headingConfidenceForOrientationInit;}
-- (void)setApplysYawDriftAdjust:(BOOL)applysYawDriftAdjust {_target.applysYawDriftAdjust = applysYawDriftAdjust;}
-- (BOOL)applysYawDriftAdjust {return _target.applysYawDriftAdjust;}
+
+
+- (void)setApplysYawDriftAdjust:(BOOL)applysYawDriftAdjust {_target.params->applysYawDriftAdjust = applysYawDriftAdjust;}
+- (BOOL)applysYawDriftAdjust {return _target.params->applysYawDriftAdjust;}
+
 
 - (void)setAccuracyForDemo:(BOOL)accuracyForDemo {_target.accuracyForDemo = accuracyForDemo;}
 - (BOOL)accuracyForDemo {return _target.accuracyForDemo;};
@@ -1613,7 +1608,15 @@ int dcount = 0;
 - (void)setBlelocppAccuracySigma:(double)blelocppAccuracySigma {_target.blelocppAccuracySigma = blelocppAccuracySigma;}
 - (double)blelocppAccuracySigma {return _target.blelocppAccuracySigma;};
 
+
 - (void)setOriAccThreshold:(double)oriAccThreshold {_target.oriAccThreshold = oriAccThreshold;}
 - (double)oriAccThreshold {return _target.oriAccThreshold;};
+
+
+- (void)setShowsStates:(BOOL)showsStates {_target.showsStates = showsStates;}
+- (BOOL)showsStates {return _target.showsStates;};
+
+- (void)setUsesCompass:(BOOL)usesCompass {_target.usesCompass = usesCompass;}
+- (BOOL)usesCompass {return _target.usesCompass;};
 
 @end

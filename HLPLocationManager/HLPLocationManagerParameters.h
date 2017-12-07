@@ -94,6 +94,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property double stdev2DExitLocating;
 @property long monitorIntervalMS;
 @property long unstableLoop;
+//@property BOOL disableStatusChangeOnHeightChanging;
 @end
 
 @interface HLPLocationManagerSystemModelInBuildingProperty : NSObject
@@ -139,6 +140,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property double alphaWeaken;
 @property int nSmooth;
 @property int nSmoothTracking;
+
 @property HLPSmoothType smoothType;
 @property HLPLocalizeMode localizeMode;
 
@@ -159,9 +161,9 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property double diffusionOrientationBias;
 
 @property double angularVelocityLimit;
+
 // Parametes for PoseRandomWalker
 @property bool doesUpdateWhenStopping;
-
 @property double maxIncidenceAngle;
 @property double weightDecayHalfLife;
 
@@ -200,7 +202,6 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 
 @property HLPOrientationMeterType orientationMeterType;
 
-
 // parameter objects
 @property (readonly) HLPLocationManagerPoseProperty *poseProperty;
 //@property loc::PoseProperty::Ptr poseProperty;// = std::make_shared<PoseProperty>();
@@ -221,6 +222,8 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property double minRssiBias;
 @property double maxRssiBias;
 @property double headingConfidenceForOrientationInit;
+
+// yaw drift adjuster
 @property BOOL applysYawDriftAdjust;
 
 @property BOOL accuracyForDemo;
