@@ -82,6 +82,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property double weightTransitionArea;
 @property double mixtureProbaTransArea;
 @property double rejectDistance;
+@property long durationAllowForceFloorUpdate;
 @end
 
 @interface HLPLocationManagerLocationStatusMonitorParameters : NSObject

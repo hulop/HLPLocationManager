@@ -1260,6 +1260,9 @@ int dcount = 0;
 
 - (void)setRejectDistance:(double)rejectDistance { _property->rejectDistance(rejectDistance); }
 - (double)rejectDistance { return _property->rejectDistance(); }
+
+- (void)setDurationAllowForceFloorUpdate:(long)durationAllowForceFloorUpdate { _property->durationAllowForceFloorUpdate(durationAllowForceFloorUpdate); }
+- (long)durationAllowForceFloorUpdate { return _property->durationAllowForceFloorUpdate(); }
 @end
 
 @implementation HLPLocationManagerLocationStatusMonitorParameters {
