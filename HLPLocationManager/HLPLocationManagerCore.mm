@@ -506,6 +506,11 @@ static HLPLocationManager *instance;
     }];
 }
 
+- (void)invalidate
+{
+    valid = NO;
+}
+
 #pragma mark - CLLocationManagerDelegate
 
 - (void)locationManager:(CLLocationManager *)manager

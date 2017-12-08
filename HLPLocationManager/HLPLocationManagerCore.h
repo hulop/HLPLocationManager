@@ -72,5 +72,6 @@ typedef NS_ENUM(NSUInteger, HLPLocationStatus) {
 - (void)disableStabilizeLocalizeWithMonitorIntervalMS:(long)intervalMS;
 - (void)disableStabilizeLocalize;
 - (void)enableStabilizeLocalize;
+- (void)invalidate;
 
 @end
