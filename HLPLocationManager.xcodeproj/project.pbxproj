@@ -6,6 +6,20 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		7E6047C11FE18234003440B0 /* HLPLocationManager-universal */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 7E6047C41FE18234003440B0 /* Build configuration list for PBXAggregateTarget "HLPLocationManager-universal" */;
+			buildPhases = (
+				7E6047C51FE1823B003440B0 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "HLPLocationManager-universal";
+			productName = "HLPLocationManager-universal";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		531C56B94E5C55D27CDC3958 /* libPods-HLPLocationManager-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EC802F34143D518B7F6435E /* libPods-HLPLocationManager-iOS.a */; };
 		A948450C1F31B12000D282F3 /* HLPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A948450B1F31B12000D282F3 /* HLPLocationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -217,6 +231,10 @@
 				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = HULOP;
 				TargetAttributes = {
+					7E6047C11FE18234003440B0 = {
+						CreatedOnToolsVersion = 9.1;
+						ProvisioningStyle = Automatic;
+					};
 					A990859D1F174F2900C1B483 = {
 						CreatedOnToolsVersion = 8.3.3;
 						ProvisioningStyle = Manual;
@@ -237,6 +255,7 @@
 			targets = (
 				A990859D1F174F2900C1B483 /* HLPLocationManager-iOS */,
 				A98269CE1F1E0BB4009E8318 /* HLPLocationManager-macOS */,
+				7E6047C11FE18234003440B0 /* HLPLocationManager-universal */,
 			);
 		};
 /* End PBXProject section */
@@ -259,6 +278,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		7E6047C51FE1823B003440B0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"${SRCROOT}/build-universal-framework.sh\"";
+		};
 		7E6713ED610546B9FE5B5B88 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -274,7 +306,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		DC46D894EC7C7476CC085A9C /* [CP] Copy Pods Resources */ = {
@@ -316,6 +348,22 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		7E6047C21FE18234003440B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7E6047C31FE18234003440B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		A98269E11F1E0BB4009E8318 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -511,6 +559,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7E6047C41FE18234003440B0 /* Build configuration list for PBXAggregateTarget "HLPLocationManager-universal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E6047C21FE18234003440B0 /* Debug */,
+				7E6047C31FE18234003440B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A98269E01F1E0BB4009E8318 /* Build configuration list for PBXNativeTarget "HLPLocationManager-macOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
