@@ -63,6 +63,7 @@ typedef struct {
     BOOL _isAccelerationEnabled;
     HLPLocationStatus _currentStatus;
     HLPLocationManagerParameters *_parameters;
+    NSDictionary *temporaryParameters;
     
     //private
     HLPLocationManagerRepLocation _repLocation;
@@ -129,39 +130,6 @@ static HLPLocationManager *instance;
 - (instancetype) initPrivate
 {
     self = [super init];
-    
-    localizer = shared_ptr<BasicLocalizer>(new BasicLocalizer());
-    amparams = shared_ptr<AltitudeManagerSimple::Parameters>(localizer->altimeterManagerParameters);
-    userData.locationManager = self;
-    localizer->updateHandler(functionCalledAfterUpdate, (void*) &userData);
-    localizer->logHandler(functionCalledToLog, (void*) &userData);
-    
-    params = localizer;
-    params->orientationMeterType = loc::TRANSFORMED_AVERAGE; // default RAW_AVERAGE
-    
-    params->stdRssiBias = 2.0;          // default 2.0
-    params->diffusionRssiBias = 0.2;    // default 0.2
-    
-    params->angularVelocityLimit = 45.0;// default 30
-    
-    params->maxIncidenceAngle = 45;     // default 45
-    
-    params->velocityRateFloor = 1.0;    // default 1.0
-    params->velocityRateElevator = 1.0; // default 0.5
-    params->velocityRateStair = 0.5;    // default 0.5
-    
-    params->burnInRadius2D = 5;         // default 10
-    params->burnInInterval = 1;         // default 1
-    params->burnInInitType = loc::INIT_WITH_SAMPLE_LOCATIONS; // default INIT_WITH_SAMPLE_LOCATIONS
-    
-    // deactivate elevator transition in system model
-    params->prwBuildingProperty->probabilityUpElevator(0.0);
-    params->prwBuildingProperty->probabilityDownElevator(0.0);
-    params->prwBuildingProperty->probabilityStayElevator(1.0);
-    
-    params->locationStatusMonitorParameters->monitorIntervalMS(3600*1000*24);
-    
-    _parameters = [[HLPLocationManagerParameters alloc] initWithTarget:self];
     
     _isActive = NO;
     isMapLoaded = NO;
@@ -256,7 +224,11 @@ static HLPLocationManager *instance;
 
 - (void)setParameters:(NSDictionary *)parameters
 {
-    [_parameters updateWithDictionary:parameters];
+    if (_parameters) {
+        [_parameters updateWithDictionary:parameters];
+    } else {
+        temporaryParameters = parameters;
+    }
 }
 
 - (NSDictionary*)parameters
@@ -431,6 +403,7 @@ static HLPLocationManager *instance;
     
     localizer.reset();
     localizer = nil;
+    _parameters = nil;
 }
 
 - (void)stop
@@ -719,6 +692,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     
     if (authorized) {
         _isActive = YES;
+        [self buildLocalizer];
         [self startSensors];
         [self _loadModels];
         valid = YES;
@@ -727,6 +701,45 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     }
 }
 
+- (void)buildLocalizer
+{
+    localizer = shared_ptr<BasicLocalizer>(new BasicLocalizer());
+    amparams = shared_ptr<AltitudeManagerSimple::Parameters>(localizer->altimeterManagerParameters);
+    userData.locationManager = self;
+    localizer->updateHandler(functionCalledAfterUpdate, (void*) &userData);
+    localizer->logHandler(functionCalledToLog, (void*) &userData);
+    
+    params = localizer;
+    params->orientationMeterType = loc::TRANSFORMED_AVERAGE; // default RAW_AVERAGE
+    
+    params->stdRssiBias = 2.0;          // default 2.0
+    params->diffusionRssiBias = 0.2;    // default 0.2
+    
+    params->angularVelocityLimit = 45.0;// default 30
+    
+    params->maxIncidenceAngle = 45;     // default 45
+    
+    params->velocityRateFloor = 1.0;    // default 1.0
+    params->velocityRateElevator = 1.0; // default 0.5
+    params->velocityRateStair = 0.5;    // default 0.5
+    
+    params->burnInRadius2D = 5;         // default 10
+    params->burnInInterval = 1;         // default 1
+    params->burnInInitType = loc::INIT_WITH_SAMPLE_LOCATIONS; // default INIT_WITH_SAMPLE_LOCATIONS
+    
+    // deactivate elevator transition in system model
+    params->prwBuildingProperty->probabilityUpElevator(0.0);
+    params->prwBuildingProperty->probabilityDownElevator(0.0);
+    params->prwBuildingProperty->probabilityStayElevator(1.0);
+    
+    params->locationStatusMonitorParameters->monitorIntervalMS(3600*1000*24);
+    
+    _parameters = [[HLPLocationManagerParameters alloc] initWithTarget:self];
+    if (temporaryParameters) {
+        [_parameters updateWithDictionary:temporaryParameters];
+        temporaryParameters = nil;
+    }
+}
 
 - (void)_loadModels {
     if (isMapLoading) {
