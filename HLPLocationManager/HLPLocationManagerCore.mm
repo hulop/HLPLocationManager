@@ -816,7 +816,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
             putBeaconsCount++;
             flagPutBeacon = NO;
         } catch(const std::exception& ex) {
-            _currentStatus = HLPLocationStatusLost;
+            [self setCurrentStatus: HLPLocationStatusLost];
             std::cout << ex.what() << std::endl;
         }
         double e = [[NSDate date] timeIntervalSince1970];
@@ -946,13 +946,13 @@ void functionCalledToLog(void *inUserData, string text)
 {
     switch (status->locationStatus()){
         case Status::UNKNOWN:
-            _currentStatus = HLPLocationStatusUnknown;
+            [self setCurrentStatus: HLPLocationStatusUnknown];
             break;
         case Status::LOCATING:
-            _currentStatus = HLPLocationStatusLocating;
+            [self setCurrentStatus: HLPLocationStatusLocating];
             break;
         case Status::STABLE:
-            _currentStatus = HLPLocationStatusStable;
+            [self setCurrentStatus: HLPLocationStatusStable];
             break;
         case Status::UNSTABLE:
             // _currentStatus is not updated
