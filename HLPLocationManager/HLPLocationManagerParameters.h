@@ -52,14 +52,19 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
     HLPTransformedAverage
 };
 
-@interface HLPLocationManagerLocation : NSObject
+@interface HLPParameters : NSObject
+- (NSDictionary*)toDictionary;
+- (void)updateWithDictionary:(NSDictionary*) dict;
+@end
+
+@interface HLPLocationManagerLocation : HLPParameters
 @property double x;
 @property double y;
 @property double z;
 @property double floor;
 @end
 
-@interface HLPLocationManagerPoseProperty : NSObject
+@interface HLPLocationManagerPoseProperty : HLPParameters
 @property double meanVelocity;
 @property double stdVelocity;
 @property double diffusionVelocity;
@@ -68,7 +73,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property double stdOrientation;
 @end
 
-@interface HLPLocationManagerStateProperty : NSObject
+@interface HLPLocationManagerStateProperty : HLPParameters
 @property double meanRssiBias;
 @property double stdRssiBias;
 @property double diffusionRssiBias;
@@ -77,7 +82,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property double maxRssiBias;
 @end
 
-@interface HLPLocationManagerFloorTransitionParameters : NSObject
+@interface HLPLocationManagerFloorTransitionParameters : HLPParameters
 @property double heightChangedCriterion;
 @property double weightTransitionArea;
 @property double mixtureProbaTransArea;
@@ -85,7 +90,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property long durationAllowForceFloorUpdate;
 @end
 
-@interface HLPLocationManagerLocationStatusMonitorParameters : NSObject
+@interface HLPLocationManagerLocationStatusMonitorParameters : HLPParameters
 @property double minimumWeightStable;
 @property double stdev2DEnterStable;
 @property double stdev2DExitStable;
@@ -97,7 +102,7 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 //@property BOOL disableStatusChangeOnHeightChanging;
 @end
 
-@interface HLPLocationManagerSystemModelInBuildingProperty : NSObject
+@interface HLPLocationManagerSystemModelInBuildingProperty : HLPParameters
 @property double probabilityUpStair;
 @property double probabilityDownStair;
 @property double probabilityStayStair;
@@ -120,21 +125,18 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property (readonly) int maxTrial;
 @end
 
-@interface HLPLocationManagerAltimeterManagerParameters : NSObject
+@interface HLPLocationManagerAltimeterManagerParameters : HLPParameters
 @property long timestampIntervalLimit;
 @property int queueLimit;
 @property int window;
 @property double stdThreshold;
 @end
 
-@interface HLPLocationManagerParameters : NSObject
+@interface HLPLocationManagerParameters : HLPParameters
 
 - (instancetype) initWithTarget:(HLPLocationManager*)target;
 
 @property (readonly) HLPLocationManager* target;
-
-- (void)updateWithDictionary:(NSDictionary*)dict;
-- (NSDictionary*)toDictionary;
 
 @property int nStates;
 @property double alphaWeaken;

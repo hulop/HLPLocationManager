@@ -233,7 +233,11 @@ static HLPLocationManager *instance;
 
 - (NSDictionary*)parameters
 {
-    return [_parameters toDictionary];
+    if (_parameters) {
+        return [_parameters toDictionary];
+    } else {
+        return temporaryParameters;
+    }
 }
 
 - (void)setCurrentStatus:(HLPLocationStatus) status // readonly
@@ -401,6 +405,9 @@ static HLPLocationManager *instance;
     [motionManager stopAccelerometerUpdates];
     [_clLocationManager stopUpdatingHeading];
     
+    if (_parameters) {
+        temporaryParameters = [_parameters toDictionary];
+    }
     localizer.reset();
     localizer = nil;
     _parameters = nil;
@@ -1169,6 +1176,63 @@ int dcount = 0;
 
 #pragma mark - properties
 
+@implementation HLPParameters
+
+- (NSDictionary*) toDictionary
+{
+    NSMutableDictionary *temp = [@{} mutableCopy];
+    unsigned int outCount, i;
+    
+    objc_property_t *properties = class_copyPropertyList([self class], &outCount);
+    for(i = 0; i < outCount; i++) {
+        objc_property_t property = properties[i];
+        const char *propName = property_getName(property);
+        if(propName) {
+            NSString *pn = [NSString stringWithCString:propName encoding:NSUTF8StringEncoding];
+            id value = [self valueForKey:pn];
+            if ([value isKindOfClass:HLPParameters.class]) {
+                value = [((HLPParameters*)value) toDictionary];
+            }
+            [temp setObject:value forKey:pn];
+        }
+    }
+    free(properties);
+    return temp;
+}
+
+- (void)updateWithDictionary:(NSDictionary*) dict
+{
+    [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSObject *obj, BOOL * _Nonnull stop) {
+        if ([obj isKindOfClass:NSDictionary.class]) {
+            HLPParameters *temp = [self valueForKey:key];
+            [temp updateWithDictionary:(NSDictionary*)obj];
+            return;
+        }
+        
+        NSArray<NSString*> *items = [key componentsSeparatedByString:@"."];
+        
+        NSObject *temp = self;
+        for(int i = 0; i < items.count-1; i++) {
+            temp = [temp valueForKey:items[i]];
+        }
+        if (temp == nil) {
+            NSLog(@"[%@] is not valid parameter", key);
+            return;
+        }
+        @try {
+            key = items[items.count-1];
+            [temp setValue:obj forKey:key];
+            NSLog(@"%@[%@] = %@", temp, key, obj);
+        }
+        @catch (NSException *e){
+            NSLog(@"%@[%@] is not valid parameter", temp, key);
+            
+        }
+    }];
+}
+
+@end
+
 @implementation HLPLocationManagerLocation {
     loc::Location* _property;
 }
@@ -1415,36 +1479,6 @@ int dcount = 0;
     return self;
 }
 
-- (void)updateWithDictionary:(NSDictionary*) dict
-{
-    [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSObject *obj, BOOL * _Nonnull stop) {
-        NSArray<NSString*> *items = [key componentsSeparatedByString:@"."];
-        
-        NSObject *temp = self;
-        for(int i = 0; i < items.count-1; i++) {
-            temp = [temp valueForKey:items[i]];
-        }
-        if (temp == nil) {
-            NSLog(@"[%@] is not valid parameter", key);
-            return;
-        }
-        @try {
-            key = items[items.count-1];
-            [temp setValue:obj forKey:key];
-            NSLog(@"%@[%@] = %@", temp, key, obj);
-        }
-        @catch (NSException *e){
-            NSLog(@"%@[%@] is not valid parameter", temp, key);
-
-        }
-    }];
-}
-
-
-- (NSDictionary*) toDictionary
-{
-    return nil;
-}
 
 - (void)setNStates:(int)nStates { _target.params->nStates = nStates;}
 - (int) nStates { return _target.params->nStates; }
