@@ -34,6 +34,7 @@ using namespace loc;
 
 @interface HLPLocationManager () {
     BOOL _isSensorEnabled;
+    BOOL isMapLoaded;
     NSOperationQueue *processQueue;
 }
 
@@ -43,6 +44,7 @@ using namespace loc;
 - (double) currentFloor;
 - (double) currentOrientationAccuracy;
 - (void) _processBeacons:(Beacons)beacons;
+- (void) _stop;
 @end
 
 @implementation HLPLocationManager (Player)
@@ -60,19 +62,12 @@ static HLPLocation* replayResetRequestLocation;
     _isSensorEnabled = NO;
     isPlaying = YES;
     
-    self.localizer->resetStatus();
-    
-    [[HLPLocationManager sharedManager] stop];
-    [self stop];
-    
     dispatch_queue_t queue = dispatch_queue_create("org.hulop.logreplay", NULL);
     dispatch_async(queue, ^{
+        [self _stop];
         [NSThread sleepForTimeInterval:1.0];
-        HLPLocationManager *manager = [HLPLocationManager sharedManager];
-        [manager start];
         [self start];
-        
-        while(!manager.isActive && isPlaying) {
+        while(!isMapLoaded && isPlaying) {
             [NSThread sleepForTimeInterval:0.1];
         }
         
@@ -309,8 +304,7 @@ static HLPLocation* replayResetRequestLocation;
         isPlaying = NO;
         _isSensorEnabled = YES;
 
-        [self stop];
-        [self start];
+        [self restart];
     });
 }
 
