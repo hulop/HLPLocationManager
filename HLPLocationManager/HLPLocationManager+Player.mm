@@ -35,6 +35,7 @@ using namespace loc;
 @interface HLPLocationManager () {
     BOOL _isSensorEnabled;
     BOOL isMapLoaded;
+    BOOL _isAccelerationEnabled;
     NSOperationQueue *processQueue;
 }
 
@@ -196,9 +197,9 @@ static HLPLocation* replayResetRequestLocation;
                         }
                         timestamp = acc.timestamp();
                         if (self.isAccelerationEnabled) {
-                            self.localizer->disableAcceleration(false);
+                            self.localizer->disableAcceleration(false, timestamp);
                         } else {
-                            self.localizer->disableAcceleration(true);
+                            self.localizer->disableAcceleration(true, timestamp);
                         }
                         self.localizer->putAcceleration(acc);
                     }
@@ -223,6 +224,22 @@ static HLPLocation* replayResetRequestLocation;
                         self.localizer->putAltimeter(alt);
                         if (bShowSensorLog) {
                             std::cout << "LogReplay:" << alt.timestamp() << ",Altimeter," << alt.relativeAltitude() << "," << alt.pressure() << std::endl;
+                        }
+                    }
+                    else if (logString.compare(0, 19, "DisableAcceleration") == 0){
+                        std::vector<std::string> values;
+                        boost::split(values, logString, boost::is_any_of(","));
+                        int da = stoi(values.at(1));
+                        long timestamp = stol(values.back());
+                        if(da==1){
+                            _isAccelerationEnabled = NO; // disable
+                            self.localizer->disableAcceleration(true, timestamp);
+                        }else{
+                            _isAccelerationEnabled = YES; // enable
+                            self.localizer->disableAcceleration(false, timestamp);
+                        }
+                        if (bShowSensorLog) {
+                            std::cout << "LogReplay:" << logString << std::endl;
                         }
                     }
                     // Parsing reset

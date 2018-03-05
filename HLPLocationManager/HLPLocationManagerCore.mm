@@ -188,6 +188,13 @@ static HLPLocationManager *instance;
 - (void)setIsAccelerationEnabled:(BOOL) value
 {
     _isAccelerationEnabled = value;
+    if(!_isActive){
+        return;
+    }
+
+    long timestamp = [[NSDate date] timeIntervalSince1970]*1000;
+    bool isAccDisabled = !value;
+    localizer->disableAcceleration(isAccDisabled, timestamp);
 }
 
 - (BOOL)isAccelerationEnabled
@@ -197,7 +204,7 @@ static HLPLocationManager *instance;
 
 - (void)disableStabilizeLocalizeWithMonitorIntervalMS:(long)intervalMS
 {
-    _isAccelerationEnabled = YES;
+    [self setIsAccelerationEnabled:YES];
     
     [processQueue addOperationWithBlock:^{
         // set status monitoring interval as default
@@ -213,7 +220,7 @@ static HLPLocationManager *instance;
 
 - (void)enableStabilizeLocalize
 {
-    _isAccelerationEnabled = NO;
+    [self setIsAccelerationEnabled:NO];
     
     [processQueue addOperationWithBlock:^{
         // set status monitoring interval inf
@@ -876,9 +883,9 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
                                   acc.acceleration.z);
         try {
             if (_isAccelerationEnabled) {
-                localizer->disableAcceleration(false);
+                localizer->disableAcceleration(false,acceleration.timestamp());
             } else {
-                localizer->disableAcceleration(true);
+                localizer->disableAcceleration(true,acceleration.timestamp());
             }
             localizer->putAcceleration(acceleration);
         } catch(const std::exception& ex) {
