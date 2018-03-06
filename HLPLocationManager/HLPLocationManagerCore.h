@@ -56,6 +56,7 @@ typedef NS_ENUM(NSUInteger, HLPLocationStatus) {
 @property (readonly) BOOL isActive;
 @property BOOL isBackground;
 @property BOOL isAccelerationEnabled;
+@property BOOL isStabilizeLocalizeEnabled;
 @property (readonly) HLPLocationStatus currentStatus;
 @property NSDictionary* parameters;
 
@@ -69,9 +70,6 @@ typedef NS_ENUM(NSUInteger, HLPLocationStatus) {
 - (void)makeStatusUnknown;
 - (void)resetLocation:(HLPLocation*)loc;
 - (void)stop;
-- (void)disableStabilizeLocalizeWithMonitorIntervalMS:(long)intervalMS;
-- (void)disableStabilizeLocalize;
-- (void)enableStabilizeLocalize;
 - (void)invalidate;
 
 @end

@@ -61,6 +61,7 @@ typedef struct {
     BOOL _isActive;
     BOOL _isBackground;
     BOOL _isAccelerationEnabled;
+    BOOL _isStabilizeLocalizeEnabled;
     HLPLocationStatus _currentStatus;
     HLPLocationManagerParameters *_parameters;
     NSDictionary *temporaryParameters;
@@ -71,6 +72,7 @@ typedef struct {
     double _maxRssiBias;
     double _minRssiBias;
     double _headingConfidenceForOrientationInit;
+    double _tempMonitorIntervalMS;
     
     //
     LocalUserData userData;
@@ -202,31 +204,29 @@ static HLPLocationManager *instance;
     return _isAccelerationEnabled;
 }
 
-- (void)disableStabilizeLocalizeWithMonitorIntervalMS:(long)intervalMS
+- (void)setIsStabilizeLocalizeEnabled:(BOOL) value
 {
-    [self setIsAccelerationEnabled:YES];
-    
-    [processQueue addOperationWithBlock:^{
-        // set status monitoring interval as default
-        LocationStatusMonitorParameters::Ptr & lmsparams = localizer->locationStatusMonitorParameters;
-        lmsparams->monitorIntervalMS(intervalMS);
-    }];
+    self.isAccelerationEnabled = !value;
+    long timestamp = (long)([[NSDate date] timeIntervalSince1970]*1000);
+    [self _logString:[NSString stringWithFormat:@"EnableStabilizeLocalize,%d,%ld", value, timestamp]];
+    if (value) {
+        _tempMonitorIntervalMS = _parameters.locationStatusMonitorParameters.monitorIntervalMS;
+        [processQueue addOperationWithBlock:^{
+            // set status monitoring interval inf
+            _parameters.locationStatusMonitorParameters.monitorIntervalMS = 3600*1000*24;
+        }];
+    }
+    else {
+        [processQueue addOperationWithBlock:^{
+            // set status monitoring interval as default
+            _parameters.locationStatusMonitorParameters.monitorIntervalMS = _tempMonitorIntervalMS;
+        }];
+    }
 }
 
-- (void)disableStabilizeLocalize
+- (BOOL)isStabilizeLocalizeEnabled
 {
-    [self disableStabilizeLocalizeWithMonitorIntervalMS:3600*1000*24];
-}
-
-- (void)enableStabilizeLocalize
-{
-    [self setIsAccelerationEnabled:NO];
-    
-    [processQueue addOperationWithBlock:^{
-        // set status monitoring interval inf
-        LocationStatusMonitorParameters::Ptr & lmsparams = localizer->locationStatusMonitorParameters;
-        lmsparams->monitorIntervalMS(3600*1000*24);
-    }];
+    return _isStabilizeLocalizeEnabled;
 }
 
 - (void)setParameters:(NSDictionary *)parameters
@@ -882,11 +882,11 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
                                   acc.acceleration.y,
                                   acc.acceleration.z);
         try {
-            if (_isAccelerationEnabled) {
-                localizer->disableAcceleration(false,acceleration.timestamp());
-            } else {
-                localizer->disableAcceleration(true,acceleration.timestamp());
-            }
+//            if (_isAccelerationEnabled) {
+//                localizer->disableAcceleration(false,acceleration.timestamp());
+//            } else {
+//                localizer->disableAcceleration(true,acceleration.timestamp());
+//            }
             localizer->putAcceleration(acceleration);
         } catch(const std::exception& ex) {
             std::cout << ex.what() << std::endl;
@@ -935,13 +935,17 @@ void functionCalledToLog(void *inUserData, string text)
     if (!(userData->locationManager.isActive)) {
         return;
     }
-    [userData->locationManager _logText:text];
+    [userData->locationManager _logCString:text];
 }
 
-- (void)_logText:(string)text {
+- (void)_logCString:(string)text {
+    [self _logString:[NSString stringWithCString:text.c_str() encoding:NSUTF8StringEncoding]];
+}
+
+- (void)_logString:(NSString*)text {
     if ([_delegate respondsToSelector:@selector(locationManager:didLogText:)]) {
         [loggingQueue addOperationWithBlock:^{
-            [_delegate locationManager:self didLogText:[NSString stringWithCString:text.c_str() encoding:NSUTF8StringEncoding]];
+            [_delegate locationManager:self didLogText:text];
         }];
     }
 }
