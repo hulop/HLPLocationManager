@@ -22,6 +22,7 @@
 
 
 #import "HLPLocationManager+Player.h"
+#import "HLPImageCaptureManager.h"
 
 #import <bleloc/BasicLocalizer.hpp>
 #import <bleloc/LogUtil.hpp>
@@ -35,10 +36,13 @@ using namespace loc;
 @interface HLPLocationManager () {
     BOOL _isSensorEnabled;
     BOOL isMapLoaded;
+    BOOL _isAccelerationEnabled;
     NSOperationQueue *processQueue;
 }
 
 - (shared_ptr<BasicLocalizer>) localizer;
+- (BOOL) valid;
+- (BOOL) isMapLoaded;
 - (NSDictionary*) anchor;
 - (void) setCurrentFloor:(double) currentFloor_;
 - (double) currentFloor;
@@ -62,12 +66,17 @@ static HLPLocation* replayResetRequestLocation;
     _isSensorEnabled = NO;
     isPlaying = YES;
     
+    self.localizer->resetStatus();
+    
+    [self _stop];
+    
     dispatch_queue_t queue = dispatch_queue_create("org.hulop.logreplay", NULL);
     dispatch_async(queue, ^{
         [self _stop];
         [NSThread sleepForTimeInterval:1.0];
         [self start];
-        while(!isMapLoaded && isPlaying) {
+        
+        while(!self.isActive || !self.valid || !self.isMapLoaded) {
             [NSThread sleepForTimeInterval:0.1];
         }
         
@@ -196,9 +205,9 @@ static HLPLocation* replayResetRequestLocation;
                         }
                         timestamp = acc.timestamp();
                         if (self.isAccelerationEnabled) {
-                            self.localizer->disableAcceleration(false);
+                            self.localizer->disableAcceleration(false, timestamp);
                         } else {
-                            self.localizer->disableAcceleration(true);
+                            self.localizer->disableAcceleration(true, timestamp);
                         }
                         self.localizer->putAcceleration(acc);
                     }
@@ -210,6 +219,9 @@ static HLPLocation* replayResetRequestLocation;
                         }
                         timestamp = att.timestamp();
                         self.localizer->putAttitude(att);
+                        
+                        // for image localization
+                        [HLPImageCaptureManager sharedManager].lastAttitudePitchDegree = att.pitch() * 180 / M_PI;
                     }
                     else if (logString.compare(0, 7, "Heading") == 0){
                         Heading head = LogUtil::toHeading(logString);
@@ -223,6 +235,41 @@ static HLPLocation* replayResetRequestLocation;
                         self.localizer->putAltimeter(alt);
                         if (bShowSensorLog) {
                             std::cout << "LogReplay:" << alt.timestamp() << ",Altimeter," << alt.relativeAltitude() << "," << alt.pressure() << std::endl;
+                        }
+                    }
+                    else if (logString.compare(0, 19, "DisableAcceleration") == 0){
+                        std::vector<std::string> values;
+                        boost::split(values, logString, boost::is_any_of(","));
+                        int da = stoi(values.at(1));
+                        long timestamp = stol(values.back());
+                        if(da==1){
+                            _isAccelerationEnabled = NO; // disable
+                            self.localizer->disableAcceleration(true, timestamp);
+                        }else{
+                            _isAccelerationEnabled = YES; // enable
+                            self.localizer->disableAcceleration(false, timestamp);
+                        }
+                        if (bShowSensorLog) {
+                            std::cout << "LogReplay:" << logString << std::endl;
+                        }
+                    }
+                    // Parsing image values
+                    else if (logString.compare(0, 5, "Image") == 0) {
+                        long timestamp = LogUtil::toImage(logString);
+                        
+                        NSString *docDir = [path stringByDeletingLastPathComponent];
+                        NSString *logDirName = [[path lastPathComponent] stringByDeletingPathExtension];
+                        NSString *logDirPath = [docDir stringByAppendingPathComponent:logDirName];
+                        NSString *imageFileName = [NSString stringWithFormat:@"%ld.jpg", timestamp];
+                        NSString *imageFilePath = [logDirPath stringByAppendingPathComponent:imageFileName];
+                        UIImage *imageData = [UIImage imageWithContentsOfFile:imageFilePath];
+                        
+                        [HLPImageCaptureManager sharedManager].lastCaptureImage = imageData;
+                        [[HLPLocationManager sharedManager] capture:timestamp image:imageData];
+                        [[HLPImageCaptureManager sharedManager].imageViewDelegate showImage:timestamp image:imageData];
+                        
+                        if (bShowSensorLog) {
+                            std::cout << "LogReplay:" << timestamp << ",Image," << imageFilePath << std::endl;
                         }
                     }
                     // Parsing reset
@@ -304,7 +351,11 @@ static HLPLocation* replayResetRequestLocation;
         isPlaying = NO;
         _isSensorEnabled = YES;
 
-        [self restart];
+        [self _stop];
+        [self start];
+        while(!self.isActive || !self.valid || !self.isMapLoaded) {
+            [NSThread sleepForTimeInterval:0.1];
+        }
     });
 }
 

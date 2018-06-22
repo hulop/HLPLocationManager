@@ -20,9 +20,18 @@
  * THE SOFTWARE.
  *******************************************************************************/
 
+#ifdef __cplusplus
+#import <opencv2/core/core.hpp>
+#import <opencv2/imgproc/imgproc.hpp>
+#import <opencv2/imgcodecs/ios.h>
+#endif
+
+#import "HLPLocation.h"
+#import "HLPImageCaptureManager.h"
+#import "HLPImageLocationManagerParameters.h"
+
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-#import "HLPLocation.h"
 
 typedef NS_ENUM(NSUInteger, HLPLocationStatus) {
     HLPLocationStatusStable,
@@ -47,15 +56,18 @@ typedef NS_ENUM(NSUInteger, HLPLocationStatus) {
 
 @end
 
-@interface HLPLocationManager: NSObject <CLLocationManagerDelegate>
+@interface HLPLocationManager: NSObject <CLLocationManagerDelegate, HLPImageCaptureDelegate>
 
 @property (weak) id<HLPLocationManagerDelegate> delegate;
 
 @property (readonly) CLLocationManager *clLocationManager;
 
+@property (readonly) BOOL isSensorEnabled;
 @property (readonly) BOOL isActive;
 @property BOOL isBackground;
 @property BOOL isAccelerationEnabled;
+@property BOOL isStabilizeLocalizeEnabled;
+@property BOOL isImageCnnEnabled;
 @property (readonly) HLPLocationStatus currentStatus;
 @property NSDictionary* parameters;
 
@@ -64,14 +76,12 @@ typedef NS_ENUM(NSUInteger, HLPLocationStatus) {
 + (instancetype)sharedManager;
 
 - (void)setModelPath:(NSString*)modelPath;
+- (void)setImageCnnSettings:(NSString*)settingsPath localizeMode:(HLPImageLocalizeMode)localizeMode useMobileNet:(BOOL)useMobileNet useLstm:(BOOL)useLstm;
 - (void)start;
 - (void)restart;
 - (void)makeStatusUnknown;
 - (void)resetLocation:(HLPLocation*)loc;
 - (void)stop;
-- (void)disableStabilizeLocalizeWithMonitorIntervalMS:(long)intervalMS;
-- (void)disableStabilizeLocalize;
-- (void)enableStabilizeLocalize;
 - (void)invalidate;
 
 @end

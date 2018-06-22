@@ -23,6 +23,7 @@
 #import "HLPLocationManagerCore.h"
 #import "HLPLocationManagerParameters.h"
 #import "HLPLocation.h"
+#import "HLPImageLocalizationManager.h"
 #import "objc/runtime.h"
 
 #import <CoreMotion/CoreMotion.h>
@@ -30,8 +31,11 @@
 #import <bleloc/bleloc.h>
 #import <bleloc/BasicLocalizer.hpp>
 #import <bleloc/LocException.hpp>
+#import <bleloc/CnnFileUtil.hpp>
+#import <bleloc/CnnPoseUtil.hpp>
 
 #import <iomanip>
+#include <Eigen/Core>
 
 using namespace std;
 using namespace loc;
@@ -61,6 +65,8 @@ typedef struct {
     BOOL _isActive;
     BOOL _isBackground;
     BOOL _isAccelerationEnabled;
+    BOOL _isStabilizeLocalizeEnabled;
+    BOOL _isImageCnnEnabled;
     HLPLocationStatus _currentStatus;
     HLPLocationManagerParameters *_parameters;
     NSDictionary *temporaryParameters;
@@ -71,6 +77,7 @@ typedef struct {
     double _maxRssiBias;
     double _minRssiBias;
     double _headingConfidenceForOrientationInit;
+    double _tempMonitorIntervalMS;
     
     //
     LocalUserData userData;
@@ -82,6 +89,9 @@ typedef struct {
     CMMotionManager *motionManager;
     CMAltimeter *altimeter;
     
+    // for image localization
+    HLPImageLocalizationManager *imageLocalizationManager;
+    
     NSOperationQueue *processQueue;
     NSOperationQueue *loggingQueue;
     NSOperationQueue *locationQueue;
@@ -89,6 +99,13 @@ typedef struct {
     // need to manage multiple maps
     NSString *modelPath;
     NSString *workingDir;
+    
+    NSString *imageCnnSettingsPath;
+    loc::ImageLocalizeMode imageLocalizeMode;
+    BOOL imageUseMobileNet;
+    BOOL imageUseLstm;
+    std::map<int, std::string> imageCnnModelPathDict;
+    std::map<int, std::string> imageBeaconSettingPathDict;
     
     BOOL isMapLoading;
     BOOL isMapLoaded;
@@ -134,6 +151,7 @@ static HLPLocationManager *instance;
     _isActive = NO;
     isMapLoaded = NO;
     _isAccelerationEnabled = YES;
+    _isImageCnnEnabled = YES;
     _isSensorEnabled = YES;
     valid = NO;
     validHeading = NO;
@@ -142,6 +160,8 @@ static HLPLocationManager *instance;
     currentFloor = NAN;
     offsetYaw = M_PI_2;
     currentOrientationAccuracy = 999;
+    
+    [HLPImageCaptureManager sharedManager].captureDelegate = self;
     
     locationQueue = [[NSOperationQueue alloc] init];
     locationQueue.maxConcurrentOperationCount = 1;
@@ -188,6 +208,13 @@ static HLPLocationManager *instance;
 - (void)setIsAccelerationEnabled:(BOOL) value
 {
     _isAccelerationEnabled = value;
+    if(!_isActive){
+        return;
+    }
+
+    long timestamp = [[NSDate date] timeIntervalSince1970]*1000;
+    bool isAccDisabled = !value;
+    localizer->disableAcceleration(isAccDisabled, timestamp);
 }
 
 - (BOOL)isAccelerationEnabled
@@ -195,31 +222,45 @@ static HLPLocationManager *instance;
     return _isAccelerationEnabled;
 }
 
-- (void)disableStabilizeLocalizeWithMonitorIntervalMS:(long)intervalMS
+- (void)setIsStabilizeLocalizeEnabled:(BOOL) value
 {
-    _isAccelerationEnabled = YES;
-    
-    [processQueue addOperationWithBlock:^{
-        // set status monitoring interval as default
-        LocationStatusMonitorParameters::Ptr & lmsparams = localizer->locationStatusMonitorParameters;
-        lmsparams->monitorIntervalMS(intervalMS);
-    }];
+    self.isAccelerationEnabled = !value;
+    long timestamp = (long)([[NSDate date] timeIntervalSince1970]*1000);
+    [self _logString:[NSString stringWithFormat:@"EnableStabilizeLocalize,%d,%ld", value, timestamp]];
+    if (value) {
+        _tempMonitorIntervalMS = _parameters.locationStatusMonitorParameters.monitorIntervalMS;
+        [processQueue addOperationWithBlock:^{
+            // set status monitoring interval inf
+            _parameters.locationStatusMonitorParameters.monitorIntervalMS = 3600*1000*24;
+        }];
+    }
+    else {
+        [processQueue addOperationWithBlock:^{
+            // set status monitoring interval as default
+            _parameters.locationStatusMonitorParameters.monitorIntervalMS = _tempMonitorIntervalMS;
+        }];
+    }
 }
 
-- (void)disableStabilizeLocalize
+- (BOOL)isStabilizeLocalizeEnabled
 {
-    [self disableStabilizeLocalizeWithMonitorIntervalMS:3600*1000*24];
+    return _isStabilizeLocalizeEnabled;
 }
 
-- (void)enableStabilizeLocalize
+- (void)setIsImageCnnEnabled:(BOOL) value
 {
-    _isAccelerationEnabled = NO;
+    _isImageCnnEnabled = value;
     
-    [processQueue addOperationWithBlock:^{
-        // set status monitoring interval inf
-        LocationStatusMonitorParameters::Ptr & lmsparams = localizer->locationStatusMonitorParameters;
-        lmsparams->monitorIntervalMS(3600*1000*24);
-    }];
+    if (_isImageCnnEnabled) {
+        [[HLPImageCaptureManager sharedManager] startCapture:_parameters.maxCnnFPS];
+    } else {
+        [[HLPImageCaptureManager sharedManager] stopCapture];
+    }
+}
+
+- (BOOL)isImageCnnEnabled
+{
+    return _isImageCnnEnabled;
 }
 
 - (void)setParameters:(NSDictionary *)parameters
@@ -262,6 +303,16 @@ static HLPLocationManager *instance;
 - (shared_ptr<BasicLocalizer>) localizer
 {
     return localizer;
+}
+
+- (BOOL) valid
+{
+    return valid;
+}
+
+- (BOOL) isMapLoaded
+{
+    return isMapLoaded;
 }
 
 - (shared_ptr<AltitudeManagerSimple::Parameters>) amparams
@@ -345,6 +396,14 @@ static HLPLocationManager *instance;
     workingDir = NSTemporaryDirectory();
 }
 
+- (void)setImageCnnSettings:(NSString*)settingsPath localizeMode:(HLPImageLocalizeMode)localizeMode useMobileNet:(BOOL)useMobileNet useLstm:(BOOL)useLstm
+{
+    imageCnnSettingsPath = settingsPath;
+    imageLocalizeMode = (loc::ImageLocalizeMode)localizeMode;
+    imageUseMobileNet = useMobileNet;
+    imageUseLstm = useLstm;
+}
+
 - (void)start
 {
     if (!_clLocationManager) {
@@ -359,6 +418,9 @@ static HLPLocationManager *instance;
         if (!altimeter) {
             altimeter = [[CMAltimeter alloc] init];
         }
+    }
+    if (!imageLocalizationManager) {
+        imageLocalizationManager = [[HLPImageLocalizationManager alloc] init];
     }
     
     if (!authorized) {
@@ -404,6 +466,8 @@ static HLPLocationManager *instance;
     [motionManager stopDeviceMotionUpdates];
     [motionManager stopAccelerometerUpdates];
     [_clLocationManager stopUpdatingHeading];
+    
+    [[HLPImageCaptureManager sharedManager] stopCapture];
     
     if (_parameters) {
         temporaryParameters = [_parameters toDictionary];
@@ -523,7 +587,7 @@ static HLPLocationManager *instance;
     };
     
     [processQueue addOperationWithBlock:^{
-        if (!_isActive) {
+        if (!_isActive || !localizer) {
             return;
         }
         loc::Heading heading = convertCLHeading(newHeading);
@@ -746,6 +810,12 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
         [_parameters updateWithDictionary:temporaryParameters];
         temporaryParameters = nil;
     }
+    
+    // setting for ImageLocalizeObservationModel
+    params->sigmaDistImageLikelihood = _parameters.sigmaDistImageLikelihood;
+    params->sigmaAngleImageLikelihood = _parameters.sigmaAngleImageLikelihood;
+    params->imageUpdateDistThreshold = _parameters.imageUpdateDistThreshold;
+    params->imageUpdateAngleLB = _parameters.imageUpdateAngleLB;
 }
 
 - (void)_loadModels {
@@ -806,6 +876,14 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
             }
         }
         
+        // load CNN model if specified
+        if (imageCnnSettingsPath) {
+            NSLog(@"Load CNN settings from %@", imageCnnSettingsPath);
+            NSString* documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+            CnnFileUtil::parseCnnSettingJsonFile([imageCnnSettingsPath UTF8String], [documentsPath UTF8String],
+                                                 imageLocalizeMode, imageCnnModelPathDict, imageBeaconSettingPathDict);
+        }
+        
         isMapLoaded = YES;
     }];
 }
@@ -820,6 +898,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
         try {
             flagPutBeacon = YES;
             localizer->putBeacons(cbeacons);
+            [imageLocalizationManager putBeacons:cbeacons];
             putBeaconsCount++;
             flagPutBeacon = NO;
         } catch(const std::exception& ex) {
@@ -843,6 +922,70 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     }
 }
 
+- (void)capture:(long)timestamp image:(UIImage *)image
+{
+    static const int resizeInputWidth = 455;
+    static const int resizeInputHeight = 256;
+    static const int cropInputSize = 224;
+    
+    // check if CNN is enabled
+    if ((!_parameters.usesCnnHeadingCalibration && !_parameters.usesCnnNavigation)
+        || !self.isImageCnnEnabled || !imageLocalizationManager.isInitialized
+        || !isMapLoaded || imageLocalizationManager.isImageLocalizeRunning) {
+        [NSThread sleepForTimeInterval:0.1];
+        return;
+    }
+    // check iphone attitude : Pitch should be around 90
+    HLPImageCaptureManager *captureManager = [HLPImageCaptureManager sharedManager];
+    NSLog(@"Image Capture Attitude : Pitch = %f", captureManager.lastAttitudePitchDegree);
+    if (fabs(captureManager.lastAttitudePitchDegree-90)>45) {
+        return;
+    }
+    
+    cv::Mat imageMat;
+    UIImageToMat(image, imageMat);
+    // convert UIImage color type RGBA to OpenCV BGR
+    cv::cvtColor(imageMat, imageMat, cv::COLOR_RGBA2BGR);
+    
+    cv::Mat resizeImageMat;
+    cv::resize(imageMat, resizeImageMat, cv::Size(resizeInputWidth, resizeInputHeight));
+    
+    int widthOffset = (resizeInputWidth - cropInputSize) / 2;
+    int heightOffset = (resizeInputHeight - cropInputSize) / 2;
+    cv::Mat cropImageMat = resizeImageMat(cv::Rect(widthOffset, heightOffset, cropInputSize, cropInputSize)).clone();
+    
+    NSArray *poseArray = [imageLocalizationManager runCnn:cropImageMat];
+    
+    // check if image localizer is stopped while CNN is running
+    if ([poseArray count]==0 || !localizer) {
+        return;
+    }
+    
+    auto status = localizer->getStatus();
+    auto meanPose = status->meanPose();
+    Pose estimatePose(*meanPose);
+    estimatePose.x([poseArray[0] doubleValue]).y([poseArray[1] doubleValue]).z([poseArray[2] doubleValue]);
+    Eigen::Quaternion<double> estimateQ([poseArray[3] doubleValue], [poseArray[4] doubleValue],
+                                        [poseArray[5] doubleValue], [poseArray[6] doubleValue]);
+    double estimateYaw = CnnPoseUtil::convertQuaternion2Yaw(estimateQ);
+    estimatePose.orientation(estimateYaw);
+    
+    if (_parameters.usesCnnNavigation
+        || (_parameters.usesCnnHeadingCalibration
+            && currentLocation.orientationAccuracy>=_parameters.angleAccuracyThresholdUseImage)) {
+        NSLog(@"Put image localized pose");
+        localizer->putImageLocalizedPose(timestamp, estimatePose);
+    } else {
+        NSLog(@"Skip put image localized pose");
+    }
+    
+    captureManager.lastImageLocalizePose = @[poseArray[0], poseArray[1], poseArray[2], [NSNumber numberWithFloat:estimateYaw]];
+    
+    // convert back to UIImage color type RGBA to visualize
+    cv::cvtColor(cropImageMat, cropImageMat, cv::COLOR_BGR2RGBA);
+    captureManager.lastLocalizeImage = MatToUIImage(cropImageMat);
+}
+
 - (void)startSensors
 {
     [_clLocationManager startUpdatingHeading];
@@ -854,7 +997,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     
     [motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryZVertical
                                                        toQueue:processQueue withHandler:^(CMDeviceMotion * _Nullable motion, NSError * _Nullable error) {
-        if (!_isActive || !_isSensorEnabled) {
+        if (!_isActive || !_isSensorEnabled || !isMapLoaded) {
             return;
         }
         try {
@@ -862,12 +1005,15 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
                               motion.attitude.pitch, motion.attitude.roll, motion.attitude.yaw + offsetYaw);
             
             localizer->putAttitude(attitude);
+            
+            // for image localization
+            [HLPImageCaptureManager sharedManager].lastAttitudePitchDegree = motion.attitude.pitch * 180 / M_PI;
         } catch(const std::exception& ex) {
             std::cout << ex.what() << std::endl;
         }
     }];
     [motionManager startAccelerometerUpdatesToQueue: processQueue withHandler:^(CMAccelerometerData * _Nullable acc, NSError * _Nullable error) {
-        if (!_isActive || !_isSensorEnabled) {
+        if (!_isActive || !_isSensorEnabled || !isMapLoaded) {
             return;
         }
         Acceleration acceleration((uptime+acc.timestamp)*1000,
@@ -875,11 +1021,11 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
                                   acc.acceleration.y,
                                   acc.acceleration.z);
         try {
-            if (_isAccelerationEnabled) {
-                localizer->disableAcceleration(false);
-            } else {
-                localizer->disableAcceleration(true);
-            }
+//            if (_isAccelerationEnabled) {
+//                localizer->disableAcceleration(false,acceleration.timestamp());
+//            } else {
+//                localizer->disableAcceleration(true,acceleration.timestamp());
+//            }
             localizer->putAcceleration(acceleration);
         } catch(const std::exception& ex) {
             std::cout << ex.what() << std::endl;
@@ -889,7 +1035,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     
     if(altimeter){
         [altimeter startRelativeAltitudeUpdatesToQueue: processQueue withHandler:^(CMAltitudeData *altitudeData, NSError *error) {
-            if (!_isActive || !_isSensorEnabled) {
+            if (!_isActive || !_isSensorEnabled || !isMapLoaded) {
                 return;
             }
             NSNumber* relAlt=  altitudeData.relativeAltitude;
@@ -928,13 +1074,17 @@ void functionCalledToLog(void *inUserData, string text)
     if (!(userData->locationManager.isActive)) {
         return;
     }
-    [userData->locationManager _logText:text];
+    [userData->locationManager _logCString:text];
 }
 
-- (void)_logText:(string)text {
+- (void)_logCString:(string)text {
+    [self _logString:[NSString stringWithCString:text.c_str() encoding:NSUTF8StringEncoding]];
+}
+
+- (void)_logString:(NSString*)text {
     if ([_delegate respondsToSelector:@selector(locationManager:didLogText:)]) {
         [loggingQueue addOperationWithBlock:^{
-            [_delegate locationManager:self didLogText:[NSString stringWithCString:text.c_str() encoding:NSUTF8StringEncoding]];
+            [_delegate locationManager:self didLogText:text];
         }];
     }
 }
@@ -973,6 +1123,23 @@ void functionCalledToLog(void *inUserData, string text)
 
     // TODO flagPutBeacon is not useful
     [self locationUpdated:status withResampledFlag:flagPutBeacon];
+    
+    // for debugging image localization
+    HLPImageCaptureManager *captureManager = [HLPImageCaptureManager sharedManager];
+    auto pose = status->meanPose();
+    
+    if (status->step()==Status::PREDICTION) {
+        captureManager.lastImageLocalizePredict = @[[NSNumber numberWithDouble:pose->x()],
+                                                    [NSNumber numberWithDouble:pose->y()],
+                                                    [NSNumber numberWithDouble:pose->z()],
+                                                    [NSNumber numberWithDouble:pose->orientation()]];
+    } else if (status->step()==Status::FILTERING_WITH_RESAMPLING
+               || status->step()==Status::FILTERING_WITHOUT_RESAMPLING) {
+        captureManager.lastImageLocalizeMix = @[[NSNumber numberWithDouble:pose->x()],
+                                                [NSNumber numberWithDouble:pose->y()],
+                                                [NSNumber numberWithDouble:pose->z()],
+                                                [NSNumber numberWithDouble:pose->orientation()]];
+    }
 }
 
 - (Pose) computeRepresentativePose:(const Pose&)meanPose withStates:(const std::vector<State>&) states
@@ -1165,6 +1332,20 @@ int dcount = 0;
             validHeading = YES;
             [_delegate locationManager:self didLocationUpdate:loc];
             //[[NSNotificationCenter defaultCenter] postNotificationName:LOCATION_CHANGED_NOTIFICATION object:self userInfo:data];
+        }
+         
+        if(wasFloorUpdated && !isnan(currentFloor) && [imageLocalizationManager floor]!=(int)currentFloor){
+            if (imageCnnModelPathDict.find((int)currentFloor)!=imageCnnModelPathDict.end()
+                && imageBeaconSettingPathDict.find((int)currentFloor)!=imageBeaconSettingPathDict.end()) {
+                NSString *imageCnnModelPath = [NSString stringWithUTF8String:imageCnnModelPathDict[(int)currentFloor].c_str()];
+                NSString *imageBeaconSettingPath = [NSString stringWithUTF8String:imageBeaconSettingPathDict[(int)currentFloor].c_str()];
+                NSLog(@"Load CNN model from %@", imageCnnModelPath);
+                NSLog(@"Load image beacon setting from %@", imageBeaconSettingPath);
+                [imageLocalizationManager load:imageCnnModelPath beaconSetFile:imageBeaconSettingPath imageLocalizeMode:imageLocalizeMode floor:[NSNumber numberWithInt:(int)currentFloor] useMobileNet:imageUseMobileNet useLstm:imageUseLstm];
+            } else {
+                NSLog(@"Cannot find CNN model, image beacon setting for the floor %d", (int)currentFloor);
+                [imageLocalizationManager close];
+            }
         }
     }
     @catch(NSException *e) {

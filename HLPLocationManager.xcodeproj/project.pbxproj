@@ -22,6 +22,12 @@
 
 /* Begin PBXBuildFile section */
 		531C56B94E5C55D27CDC3958 /* libPods-HLPLocationManager-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EC802F34143D518B7F6435E /* libPods-HLPLocationManager-iOS.a */; };
+		662663652036B1AA006AC08B /* HLPImageLocationManagerParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 662663642036B17A006AC08B /* HLPImageLocationManagerParameters.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		668398A6201152FD00090723 /* HLPImageLocalizationManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = 668398A4201152FD00090723 /* HLPImageLocalizationManager.mm */; };
+		6694C0512022779C00B63F8F /* HLPImageCaptureManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 6694C04F2022779C00B63F8F /* HLPImageCaptureManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6694C0522022779C00B63F8F /* HLPImageCaptureManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6694C0502022779C00B63F8F /* HLPImageCaptureManager.m */; };
+		66A60DBF2020CD6900173820 /* HLPImageLocalizationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 668398A3201152E600090723 /* HLPImageLocalizationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		66B3D6EE2011A1AA00931ACF /* ios_conversions.mm in Sources */ = {isa = PBXBuildFile; fileRef = 66B3D6ED2011A1AA00931ACF /* ios_conversions.mm */; };
 		A948450C1F31B12000D282F3 /* HLPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A948450B1F31B12000D282F3 /* HLPLocationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A98269D21F1E0BB4009E8318 /* HLPLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = A99085E11F17740200C1B483 /* HLPLocation.m */; };
 		A98269D61F1E0BB4009E8318 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A99085DC1F176E8F00C1B483 /* Foundation.framework */; };
@@ -42,6 +48,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		662663642036B17A006AC08B /* HLPImageLocationManagerParameters.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HLPImageLocationManagerParameters.h; path = HLPLocationManager/image/HLPImageLocationManagerParameters.h; sourceTree = SOURCE_ROOT; };
+		668398A3201152E600090723 /* HLPImageLocalizationManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HLPImageLocalizationManager.h; path = HLPLocationManager/image/HLPImageLocalizationManager.h; sourceTree = SOURCE_ROOT; };
+		668398A4201152FD00090723 /* HLPImageLocalizationManager.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = HLPImageLocalizationManager.mm; path = HLPLocationManager/image/HLPImageLocalizationManager.mm; sourceTree = SOURCE_ROOT; };
+		6694C04F2022779C00B63F8F /* HLPImageCaptureManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HLPImageCaptureManager.h; path = HLPLocationManager/image/HLPImageCaptureManager.h; sourceTree = SOURCE_ROOT; };
+		6694C0502022779C00B63F8F /* HLPImageCaptureManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HLPImageCaptureManager.m; path = HLPLocationManager/image/HLPImageCaptureManager.m; sourceTree = SOURCE_ROOT; };
+		66B3D6ED2011A1AA00931ACF /* ios_conversions.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios_conversions.mm; path = HLPLocationManager/image/ios_conversions.mm; sourceTree = SOURCE_ROOT; };
 		9EC802F34143D518B7F6435E /* libPods-HLPLocationManager-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HLPLocationManager-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A948450B1F31B12000D282F3 /* HLPLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HLPLocationManager.h; path = "HLPLocationManager-macOS/HLPLocationManager.h"; sourceTree = SOURCE_ROOT; };
 		A98269E31F1E0BB4009E8318 /* HLPLocationManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HLPLocationManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -113,6 +125,20 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		6683989E20114AA200090723 /* image */ = {
+			isa = PBXGroup;
+			children = (
+				66B3D6ED2011A1AA00931ACF /* ios_conversions.mm */,
+				6694C04F2022779C00B63F8F /* HLPImageCaptureManager.h */,
+				6694C0502022779C00B63F8F /* HLPImageCaptureManager.m */,
+				668398A3201152E600090723 /* HLPImageLocalizationManager.h */,
+				668398A4201152FD00090723 /* HLPImageLocalizationManager.mm */,
+				662663642036B17A006AC08B /* HLPImageLocationManagerParameters.h */,
+			);
+			name = image;
+			path = "New Group";
+			sourceTree = "<group>";
+		};
 		A948450A1F31B05A00D282F3 /* HLPLocationManager-macOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -144,6 +170,7 @@
 		A99085A01F174F2900C1B483 /* HLPLocationManager */ = {
 			isa = PBXGroup;
 			children = (
+				6683989E20114AA200090723 /* image */,
 				A99085D41F17579F00C1B483 /* HLPLocationManager.h */,
 				A9DA41F71F5FC8E700ED8E01 /* HLPLocationManager+Player.h */,
 				A9DA41F81F5FC8E700ED8E01 /* HLPLocationManager+Player.mm */,
@@ -178,6 +205,9 @@
 				A99085E21F17740200C1B483 /* HLPLocation.h in Headers */,
 				A99085AC1F1756B600C1B483 /* HLPLocationManagerParameters.h in Headers */,
 				A99085A31F174F2900C1B483 /* HLPLocationManagerCore.h in Headers */,
+				6694C0512022779C00B63F8F /* HLPImageCaptureManager.h in Headers */,
+				66A60DBF2020CD6900173820 /* HLPImageLocalizationManager.h in Headers */,
+				662663652036B1AA006AC08B /* HLPImageLocationManagerParameters.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,7 +241,6 @@
 				A990859A1F174F2900C1B483 /* Frameworks */,
 				A990859B1F174F2900C1B483 /* Headers */,
 				A990859C1F174F2900C1B483 /* Resources */,
-				DC46D894EC7C7476CC085A9C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -306,22 +335,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		DC46D894EC7C7476CC085A9C /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HLPLocationManager-iOS/Pods-HLPLocationManager-iOS-resources.sh\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -340,6 +354,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				A99085E31F17740200C1B483 /* HLPLocation.m in Sources */,
+				6694C0522022779C00B63F8F /* HLPImageCaptureManager.m in Sources */,
+				668398A6201152FD00090723 /* HLPImageLocalizationManager.mm in Sources */,
+				66B3D6EE2011A1AA00931ACF /* ios_conversions.mm in Sources */,
 				A99085AA1F1756A900C1B483 /* HLPLocationManagerCore.mm in Sources */,
 				A9DA41FA1F5FC8E700ED8E01 /* HLPLocationManager+Player.mm in Sources */,
 			);
@@ -450,10 +467,30 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(TF_ROOT)",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/protobuf/src",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/proto",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/nsync/public",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/eigen",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				LIBRARY_SEARCH_PATHS = (
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/protobuf_ios/lib",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/lib",
+				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/nsync/builds/lipo.ios.c++11/nsync.a",
+					"-lprotobuf",
+					"-lprotobuf-lite",
+					"-force_load",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/lib/libtensorflow-core.a",
+				);
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TF_ROOT = "/Users/ishihara/Documents/package/tensorflow-1.4.1/";
 				VALID_ARCHS = "arm64 x86_64";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -502,9 +539,29 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(TF_ROOT)",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/protobuf/src",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/proto",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/nsync/public",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/eigen",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				LIBRARY_SEARCH_PATHS = (
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/protobuf_ios/lib",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/lib",
+				);
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = (
+					"$(TF_ROOT)/tensorflow/contrib/makefile/downloads/nsync/builds/lipo.ios.c++11/nsync.a",
+					"-lprotobuf",
+					"-lprotobuf-lite",
+					"-force_load",
+					"$(TF_ROOT)/tensorflow/contrib/makefile/gen/lib/libtensorflow-core.a",
+				);
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TF_ROOT = "/Users/ishihara/Documents/package/tensorflow-1.4.1/";
 				VALIDATE_PRODUCT = YES;
 				VALID_ARCHS = "arm64 x86_64";
 				VERSIONING_SYSTEM = "apple-generic";

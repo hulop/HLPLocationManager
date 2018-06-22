@@ -237,6 +237,15 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 @property BOOL showsStates;
 @property BOOL usesCompass;
 
+@property BOOL usesCnnHeadingCalibration;
+@property BOOL usesCnnNavigation;
+@property double maxCnnFPS;
+@property double angleAccuracyThresholdUseImage;
+@property double sigmaDistImageLikelihood;
+@property double sigmaAngleImageLikelihood;
+@property double imageUpdateDistThreshold;
+@property double imageUpdateAngleLB;
+
 @end
 
 
