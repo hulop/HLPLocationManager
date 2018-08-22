@@ -7,6 +7,7 @@ target 'HLPLocationManager-iOS' do
   pod 'boost', :podspec => './podspecs/boost.podspec.json'
   pod 'cereal', :podspec => './podspecs/cereal.podspec'
   pod 'eigen', '3.2.5'
-  pod 'OpenCV-Dynamic', '3.2.4'
+  pod 'OpenCV-Dynamic', :git => 'https://github.com/Legoless/OpenCV-Dynamic.git'
   pod 'picojson', :podspec => './podspecs/picojson.podspec'
 end
+
