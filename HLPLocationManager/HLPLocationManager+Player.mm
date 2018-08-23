@@ -176,7 +176,7 @@ static HLPLocation* replayResetRequestLocation;
                 if (bSensor && v.size() > 3) {
                     std::string logString = v.at(3);
                     // Parsing beacons value
-                    if (logString.compare(0, 6, "Beacon") == 0) {
+                    if (logString.compare(0, 7, "Beacon,") == 0) {
                         Beacons beacons = DataUtils::parseLogBeaconsCSV(logString);
                         std::cout << "LogReplay:" << beacons.timestamp() << ",Beacon," << beacons.size();
                         for(auto& b : beacons){
@@ -190,7 +190,7 @@ static HLPLocation* replayResetRequestLocation;
                         [self _processBeacons:beacons];
                     }
                     // Parsing acceleration values
-                    else if (logString.compare(0, 3, "Acc") == 0) {
+                    else if (logString.compare(0, 4, "Acc,") == 0) {
                         Acceleration acc = LogUtil::toAcceleration(logString);
                         if (bShowSensorLog) {
                             std::cout << "LogReplay:" << acc.timestamp() << ",Acc," << acc << std::endl;
@@ -204,7 +204,7 @@ static HLPLocation* replayResetRequestLocation;
                         self.localizer->putAcceleration(acc);
                     }
                     // Parsing motion values
-                    else if (logString.compare(0, 6, "Motion") == 0) {
+                    else if (logString.compare(0, 7, "Motion,") == 0) {
                         Attitude att = LogUtil::toAttitude(logString);
                         if (bShowSensorLog) {
                             std::cout << "LogReplay:" << att.timestamp() << ",Motion," << att << std::endl;
@@ -212,21 +212,21 @@ static HLPLocation* replayResetRequestLocation;
                         timestamp = att.timestamp();
                         self.localizer->putAttitude(att);
                     }
-                    else if (logString.compare(0, 7, "Heading") == 0){
+                    else if (logString.compare(0, 8,"Heading,") == 0){
                         Heading head = LogUtil::toHeading(logString);
                         self.localizer->putHeading(head);
                         if (bShowSensorLog) {
                             std::cout << "LogReplay:" << head.timestamp() << ",Heading," << head.trueHeading() << "," << head.magneticHeading() << "," << head.headingAccuracy() << std::endl;
                         }
                     }
-                    else if (logString.compare(0, 9, "Altimeter") == 0){
+                    else if (logString.compare(0, 10,"Altimeter,") == 0){
                         Altimeter alt = LogUtil::toAltimeter(logString);
                         self.localizer->putAltimeter(alt);
                         if (bShowSensorLog) {
                             std::cout << "LogReplay:" << alt.timestamp() << ",Altimeter," << alt.relativeAltitude() << "," << alt.pressure() << std::endl;
                         }
                     }
-                    else if (logString.compare(0, 19, "DisableAcceleration") == 0){
+                    else if (logString.compare(0, 20, "DisableAcceleration,") == 0){
                         std::vector<std::string> values;
                         boost::split(values, logString, boost::is_any_of(","));
                         int da = stoi(values.at(1));
@@ -243,7 +243,7 @@ static HLPLocation* replayResetRequestLocation;
                         }
                     }
                     // Parsing reset
-                    else if (logString.compare(0, 5, "Reset") == 0) {
+                    else if (logString.compare(0, 6, "Reset,") == 0) {
                         if (bResetInLog){
                             // "Reset",lat,lng,floor,heading,timestamp
                             std::vector<std::string> values;
@@ -267,7 +267,7 @@ static HLPLocation* replayResetRequestLocation;
                         }
                     }
                     // Marker
-                    else if (logString.compare(0, 6, "Marker") == 0){
+                    else if (logString.compare(0, 7, "Marker,") == 0){
                         // "Marker",lat,lng,floor,timestamp
                         std::vector<std::string> values;
                         boost::split(values, logString, boost::is_any_of(","));
@@ -285,7 +285,7 @@ static HLPLocation* replayResetRequestLocation;
                 }
                 
                 if (!bSensor) {
-                    if (v.size() > 3 && v.at(3).compare(0, 4, "Pose") == 0) {
+                    if (v.size() > 3 && v.at(3).compare(0, 5, "Pose,") == 0) {
                         std::string log_string = v.at(3);
                         std::vector<std::string> att_values;
                         boost::split(att_values, log_string, boost::is_any_of(","));
