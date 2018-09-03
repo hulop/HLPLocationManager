@@ -621,6 +621,11 @@ static HLPLocationManager *instance;
     
     if ([uuids isEqualToSet:observedUuids]){
         [self locationManager: manager didRangeBeaconsAllRegions:currentBeacons inRegion:region at:timestamp];
+
+        auto tsDiff = beaconTimestamps.back() - beaconTimestamps.front();
+        NSString* text = [NSString stringWithFormat:@"BeaconRegionInterval,%ld",tsDiff ];
+        [self _logString: text];
+
         observedUuids = [[NSMutableSet<NSUUID*> alloc] init];
         currentBeacons = [[NSMutableArray<CLBeacon*> alloc] init];
         beaconTimestamps.clear();
