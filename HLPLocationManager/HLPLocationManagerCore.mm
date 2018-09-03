@@ -116,6 +116,14 @@ typedef struct {
     
     double smoothedLocationAcc;
     double smootingLocationRate;
+    
+    // for didRangeBeacons with multiple regions
+    NSMutableSet* uuids;
+    long rangeBeaconTimeout; // 100 [ms]
+    long lastBeaconTimestamp;
+    std::vector<long> beaconTimestamps;
+    NSMutableSet* observedUuids;
+    NSMutableArray* currentBeacons;
 }
 
 static HLPLocationManager *instance;
@@ -159,6 +167,9 @@ static HLPLocationManager *instance;
     
     smoothedLocationAcc = -1;
     smootingLocationRate = 0.1;
+    
+    rangeBeaconTimeout = 100; // [ms]
+    lastBeaconTimestamp = 0;
     
     return self;
 }
@@ -562,8 +573,7 @@ static HLPLocationManager *instance;
     }
 }
 
-- (void)locationManager:(CLLocationManager *)manager
-        didRangeBeacons:(NSArray<CLBeacon *> *)beacons inRegion:(CLBeaconRegion *)region
+- (void)locationManager:(CLLocationManager*) manager didRangeBeaconsAllRegions:(NSArray<CLBeacon *> *)beacons inRegion:(CLBeaconRegion *)region at:(long) timestamp
 {
     if (!_isActive || [beacons count] == 0 || !_isSensorEnabled) {
         return;
@@ -579,7 +589,7 @@ static HLPLocationManager *instance;
         Beacon cb(b.major.intValue, b.minor.intValue, rssi);
         cbeacons.push_back(cb);
     }
-    cbeacons.timestamp([[NSDate date] timeIntervalSince1970]*1000);
+    cbeacons.timestamp(timestamp);
     
     [processQueue addOperationWithBlock:^{
         @try {
@@ -593,6 +603,38 @@ static HLPLocationManager *instance;
     if ([_delegate respondsToSelector:@selector(locationManager:didRangeBeacons:inRegion:)]) {
         [_delegate locationManager:manager didRangeBeacons:beacons inRegion:region];
     }
+}
+
+- (void)locationManager:(CLLocationManager*) manager processDidRangeBeacons:(NSArray<CLBeacon *> *)beacons inRegion:(CLBeaconRegion *)region at:(long) timestamp
+{
+    auto tsDiff = timestamp - lastBeaconTimestamp;
+    if (tsDiff > rangeBeaconTimeout){
+        observedUuids = [[NSMutableSet<NSUUID*> alloc] init];
+        currentBeacons = [[NSMutableArray<CLBeacon*> alloc] init];
+        beaconTimestamps.clear();
+    }
+    [observedUuids addObject: region.proximityUUID];
+    for(int i = 0; i < [beacons count]; i++) {
+        CLBeacon *b = beacons[i];
+        [currentBeacons addObject: b];
+    }
+    beaconTimestamps.push_back(timestamp);
+    
+    if ([uuids isEqualToSet:observedUuids]){
+        [self locationManager: manager didRangeBeaconsAllRegions:currentBeacons inRegion:region at:timestamp];
+        observedUuids = [[NSMutableSet<NSUUID*> alloc] init];
+        currentBeacons = [[NSMutableArray<CLBeacon*> alloc] init];
+        beaconTimestamps.clear();
+    }
+    
+    lastBeaconTimestamp = timestamp;
+}
+
+- (void)locationManager:(CLLocationManager *)manager
+        didRangeBeacons:(NSArray<CLBeacon *> *)beacons inRegion:(CLBeaconRegion *)region
+{
+    long timestamp = [[NSDate date] timeIntervalSince1970]*1000;
+    [self locationManager: manager processDidRangeBeacons:beacons inRegion:region at:timestamp];
 }
 
 - (void)locationManager:(CLLocationManager *)manager
@@ -800,19 +842,21 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
         
         auto& beacons = localizer->dataStore->getBLEBeacons();
         
+        uuids = [[NSMutableSet alloc] init];
         NSMutableDictionary *dict = [@{} mutableCopy];
         for(auto it = beacons.begin(); it != beacons.end(); it++) {
             NSString *uuidStr = [NSString stringWithUTF8String: it->uuid().c_str()];
             if (!dict[uuidStr]) {
                 NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidStr];
                 dict[uuidStr] = uuid;
+                [uuids addObject:uuid];
                 
                 CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:uuidStr];
                 
                 [_clLocationManager startRangingBeaconsInRegion:region];
             }
         }
-        
+
         isMapLoaded = YES;
     }];
 }
