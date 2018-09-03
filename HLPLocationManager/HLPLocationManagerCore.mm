@@ -581,12 +581,11 @@ static HLPLocationManager *instance;
     Beacons cbeacons;
     for(int i = 0; i < [beacons count]; i++) {
         CLBeacon *b = [beacons objectAtIndex: i];
-        
         long rssi = -100;
         if (b.rssi < 0) {
             rssi = b.rssi;
         }
-        Beacon cb(b.major.intValue, b.minor.intValue, rssi);
+        Beacon cb([b.proximityUUID.UUIDString UTF8String], b.major.intValue, b.minor.intValue, rssi);
         cbeacons.push_back(cb);
     }
     cbeacons.timestamp(timestamp);
