@@ -9,5 +9,6 @@ target 'HLPLocationManager-iOS' do
   pod 'eigen', '3.2.5'
   pod 'OpenCV-Dynamic', '4.0.0-alpha1'
   pod 'picojson', :podspec => './podspecs/picojson.podspec'
+  pod 'SSZipArchive'
 end
 

@@ -26,6 +26,7 @@
 #import "objc/runtime.h"
 
 #import <CoreMotion/CoreMotion.h>
+#import <SSZipArchive.h>
 
 #import <bleloc/bleloc.h>
 #import <bleloc/BasicLocalizer.hpp>
@@ -359,8 +360,18 @@ static HLPLocationManager *instance;
 
 - (void)setModelPath:(NSString *)path
 {
-    modelPath = path;
     workingDir = NSTemporaryDirectory();
+    
+    NSString* pathExt = [path pathExtension];
+    
+    if([pathExt isEqualToString: @"zip"]){
+        [SSZipArchive unzipFileAtPath: path toDestination:workingDir];
+        NSString* fileName = [[[path lastPathComponent] stringByDeletingPathExtension] stringByAppendingPathExtension:@"json"];
+        NSString* newPath = [workingDir stringByAppendingPathComponent: fileName];
+        modelPath = newPath;
+    }else{
+        modelPath = path;
+    }
 }
 
 - (void)start
@@ -1038,7 +1049,7 @@ void functionCalledToLog(void *inUserData, string text)
 {
     Pose refPose(meanPose);
     
-    int idx;
+    size_t idx;
     Location loc;
     switch(_repLocation) {
         case HLPLocationManagerRepLocationMean:
