@@ -228,6 +228,8 @@ typedef NS_ENUM(NSInteger, HLPOrientationMeterType) {
 // yaw drift adjuster
 @property BOOL applysYawDriftAdjust;
 
+@property int adjustsBeaconSort;
+
 @property BOOL accuracyForDemo;
 @property BOOL usesBlelocppAcc;
 @property double blelocppAccuracySigma;

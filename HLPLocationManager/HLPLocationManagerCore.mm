@@ -1722,6 +1722,8 @@ int dcount = 0;
 - (void)setApplysYawDriftAdjust:(BOOL)applysYawDriftAdjust {_target.params->applysYawDriftAdjust = applysYawDriftAdjust;}
 - (BOOL)applysYawDriftAdjust {return _target.params->applysYawDriftAdjust;}
 
+- (void)setAdjustsBeaconSort:(int) adjustsBeaconSort {_target.params->adjustsBeaconSort = adjustsBeaconSort;}
+- (int)adjustsBeaconSort {return _target.params->adjustsBeaconSort;}
 
 - (void)setAccuracyForDemo:(BOOL)accuracyForDemo {_target.accuracyForDemo = accuracyForDemo;}
 - (BOOL)accuracyForDemo {return _target.accuracyForDemo;};
