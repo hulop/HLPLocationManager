@@ -26,7 +26,7 @@
 #import "objc/runtime.h"
 
 #import <CoreMotion/CoreMotion.h>
-#import <SSZipArchive.h>
+#import <ZipArchive/SSZipArchive.h>
 
 #import <bleloc/bleloc.h>
 #import <bleloc/BasicLocalizer.hpp>
@@ -60,6 +60,7 @@ typedef struct {
     //public
     BOOL _isSensorEnabled;
     BOOL _isActive;
+    BOOL _isLoading;
     BOOL _isBackground;
     BOOL _isAccelerationEnabled;
     BOOL _isStabilizeLocalizeEnabled;
@@ -143,6 +144,7 @@ static HLPLocationManager *instance;
     self = [super init];
     
     _isActive = NO;
+    _isLoading = NO;
     isMapLoaded = NO;
     _isAccelerationEnabled = YES;
     _isSensorEnabled = YES;
@@ -752,7 +754,10 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
 - (void)_didChangeAuthorizationStatus:(BOOL)authorized_
 {
     authorized = authorized_;
-    
+    if (_isLoading == YES) {
+        return;
+    }
+    _isLoading = YES;
     if (_isActive == YES) {
         if (valid == NO) {
             [self stop];
@@ -770,6 +775,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     } else {
         [self stop];
     }
+    _isLoading = NO;
 }
 
 - (void)buildLocalizer

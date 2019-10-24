@@ -22,6 +22,7 @@
 
 /* Begin PBXBuildFile section */
 		531C56B94E5C55D27CDC3958 /* libPods-HLPLocationManager-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EC802F34143D518B7F6435E /* libPods-HLPLocationManager-iOS.a */; };
+		7E61EFB4228E7107006C3E49 /* ZipArchive.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E61EFB2228E693D006C3E49 /* ZipArchive.framework */; };
 		A948450C1F31B12000D282F3 /* HLPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A948450B1F31B12000D282F3 /* HLPLocationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A98269D21F1E0BB4009E8318 /* HLPLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = A99085E11F17740200C1B483 /* HLPLocation.m */; };
 		A98269D61F1E0BB4009E8318 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A99085DC1F176E8F00C1B483 /* Foundation.framework */; };
@@ -42,6 +43,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7E61EFB2228E693D006C3E49 /* ZipArchive.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ZipArchive.framework; path = Carthage/Build/iOS/ZipArchive.framework; sourceTree = "<group>"; };
 		9EC802F34143D518B7F6435E /* libPods-HLPLocationManager-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HLPLocationManager-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A948450B1F31B12000D282F3 /* HLPLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HLPLocationManager.h; path = "HLPLocationManager-macOS/HLPLocationManager.h"; sourceTree = SOURCE_ROOT; };
 		A98269E31F1E0BB4009E8318 /* HLPLocationManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HLPLocationManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,6 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E61EFB4228E7107006C3E49 /* ZipArchive.framework in Frameworks */,
 				A989D3B31F60E39D00A89D95 /* CoreMotion.framework in Frameworks */,
 				A989D3B21F60E38B00A89D95 /* CoreLocation.framework in Frameworks */,
 				A989D3AE1F60E2B600A89D95 /* Foundation.framework in Frameworks */,
@@ -93,6 +96,7 @@
 		49219191280599FB3FA6E1C0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7E61EFB2228E693D006C3E49 /* ZipArchive.framework */,
 				A989D3B11F60E38B00A89D95 /* CoreLocation.framework */,
 				A9EFA97D1F1F0E6D007EEEBE /* CoreMotion.framework */,
 				A989D3AD1F60E2B600A89D95 /* Foundation.framework */,
@@ -211,6 +215,7 @@
 				A990859A1F174F2900C1B483 /* Frameworks */,
 				A990859B1F174F2900C1B483 /* Headers */,
 				A990859C1F174F2900C1B483 /* Resources */,
+				7E61EFB3228E6946006C3E49 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -245,6 +250,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = A99085941F174F2900C1B483;
@@ -289,6 +295,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"${SRCROOT}/script/build-universal-framework.sh\"";
+		};
+		7E61EFB3228E6946006C3E49 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/ZipArchive.framework",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
 		};
 		7E6713ED610546B9FE5B5B88 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -506,6 +530,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = HLPLocationManager/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -528,6 +556,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = HLPLocationManager/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";

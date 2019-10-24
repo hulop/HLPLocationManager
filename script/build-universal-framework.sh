@@ -20,6 +20,8 @@ lipo -create -output "${FRAMEWORK}/${FRAMEWORK_NAME}" "${SIMULATOR_LIBRARY_PATH}
 mkdir -p "${PROJECT_DIR}/build/Carthage/Build/iOS"
 rm -rf "${PROJECT_DIR}/build/Carthage/Build/iOS/${FRAMEWORK_NAME}.framework"
 cp -R "${FRAMEWORK}" "${PROJECT_DIR}/build/Carthage/Build/iOS/"
+dsymutil "${PROJECT_DIR}/build/Carthage/Build/iOS/${FRAMEWORK_NAME}.framework" -o "${PROJECT_DIR}/build/Carthage/Build/iOS/${FRAMEWORK_NAME}.framework.dSYM"
+
 #cp -R "${DEVICE_LIBRARY_PATH}" "${PROJECT_DIR}/build/Carthage/Build/iOS/"
 
 
@@ -28,6 +30,7 @@ xcodebuild -project "${FRAMEWORK_NAME}.xcodeproj" -scheme "${FRAMEWORK_NAME}-mac
 mkdir -p "${PROJECT_DIR}/build/Carthage/Build/Mac"
 rm -rf "${PROJECT_DIR}/build/Carthage/Build/Mac/${FRAMEWORK_NAME}.framework"
 cp -R "${MAC_LIBRARY_PATH}" "${PROJECT_DIR}/build/Carthage/Build/Mac/"
+dsymutil "${PROJECT_DIR}/build/Carthage/Build/Mac/${FRAMEWORK_NAME}.framework" -o "${PROJECT_DIR}/build/Carthage/Build/Mac/${FRAMEWORK_NAME}.framework.dSYM"
 
 cd "${PROJECT_DIR}/build/"
 zip -r "${FRAMEWORK_NAME}.framework.zip" Carthage
