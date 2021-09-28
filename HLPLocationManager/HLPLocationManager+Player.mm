@@ -183,7 +183,7 @@ static HLPLocation* replayResetRequestLocation;
                             if(b.rssi()==0.0){
                                 b.rssi(-100);
                             }
-                            std::cout << "," << b.major() << "," << b.minor() << "," << b.rssi();
+                            std::cout << "," << b.majorId() << "," << b.minorId() << "," << b.rssi();
                         }
                         std::cout << std::endl;
                         timestamp = beacons.timestamp();

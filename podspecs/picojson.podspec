@@ -11,5 +11,5 @@ PicoJSON is a tiny JSON parser / serializer for C++
   s.source       = { :git => "https://github.com/kazuho/picojson.git", :tag => "v1.3.0" }
   s.source_files = "*.h"
   s.public_header_files = "*.h"
-
+  s.ios.deployment_target  = '9.0'
 end
