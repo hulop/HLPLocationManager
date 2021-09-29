@@ -26,7 +26,7 @@
 #import "objc/runtime.h"
 
 #import <CoreMotion/CoreMotion.h>
-#import <ZipArchive/SSZipArchive.h>
+#import <ZipArchive.h>
 
 #import <bleloc/bleloc.h>
 #import <bleloc/BasicLocalizer.hpp>

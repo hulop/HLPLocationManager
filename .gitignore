@@ -27,4 +27,6 @@ Podfile.lock
 Carthage/
 
 HLPLocationManager.xcworkspace/
-HLPLocationManager.framework.zip
+HLPLocationManager.xcframework/
+HLPLocationManager.xcframework.zip
+archives
