@@ -12,10 +12,6 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/hulop/blelocpp.git",
-            .exact("1.4.0-alpha")
-        ),
-        .package(
             url: "https://github.com/ZipArchive/ZipArchive.git",
             .exact("2.4.2")
         )
