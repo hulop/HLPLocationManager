@@ -1,7 +1,7 @@
 // swift-tools-version:5.3
 import PackageDescription
 
-let version = "1.1.0-alpha"
+let version = "1.1.0-beta"
 
 let package = Package(
     name: "HLPLocationManager",
@@ -19,8 +19,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "HLPLocationManager",
-            url: "https://github.com/hulop/HLPLocationManager/releases/download/v1.1.0-alpha/HLPLocationManager.xcframework.zip",
-            checksum: "45622ae3389ec84d735436a3076284668889faeb96a532a88197438530c8f916"
+            url: "https://github.com/hulop/HLPLocationManager/releases/download/v1.1.0-beta/HLPLocationManager.xcframework.zip",
+            checksum: "4245ab7596414f0de3ceaa9929533685e44b014ce8e6d26a80289d124537f7ec"
         )
     ]
 )
