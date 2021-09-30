@@ -7,7 +7,7 @@ target 'HLPLocationManager-iOS' do
   pod 'boost', :podspec => './podspecs/boost.podspec.json'
   pod 'cereal', :podspec => './podspecs/cereal.podspec'
   pod 'eigen', :podspec => './podspecs/eigen.podspec.json'
-  pod 'OpenCV', :podspec => './podspecs/OpenCV.podspec'
+#  pod 'OpenCV', :podspec => './podspecs/OpenCV.podspec'
   pod 'picojson', :podspec => './podspecs/picojson.podspec'
 end
 
