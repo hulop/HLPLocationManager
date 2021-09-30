@@ -1,7 +1,7 @@
 // swift-tools-version:5.3
 import PackageDescription
 
-let version = "1.1.0-gamma"
+let version = "1.1.0-delta"
 
 let package = Package(
     name: "HLPLocationManager",
@@ -12,15 +12,19 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/ZipArchive/ZipArchive.git",
-            .exact("2.4.2")
+            url: "https://github.com/hulop/blelocpp",
+            .exact("1.4.0-alpha")
+        ),
+        .package(
+            url: "https://github.com/AndrewSB/ZipArchive",
+            .revision("a6ef3c6c3b3dc30a69936ccd68cbfd3946024818")
         )
     ],
     targets: [
         .binaryTarget(
             name: "HLPLocationManager",
-            url: "https://github.com/hulop/HLPLocationManager/releases/download/v1.1.0-gamma/HLPLocationManager.xcframework.zip",
-            checksum: "f8c8fa65f79771ec60aaa739ede500daf00cacbe6333c5cf23fba5d2cc4b8b3c"
+            url: "https://github.com/hulop/HLPLocationManager/releases/download/v1.1.0-delta/HLPLocationManager.xcframework.zip",
+            checksum: "9476ee2d2d3e0dc9a2e4abde147cd26d78ea0bfe9169ee2e71d8a9d0d51fe904"
         )
     ]
 )

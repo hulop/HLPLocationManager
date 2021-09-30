@@ -15,6 +15,7 @@ then
     xcodebuild clean -workspace ${project}.xcworkspace -scheme ${project}-macOS -sdk iphoneos
     rm -rf archives
     rm -rf ${project}.xcframework
+    rm -rf ${project}.xcframework.zip
     exit 1
 else
     echo "unknown configuration" $1
@@ -32,4 +33,7 @@ xcodebuild -create-xcframework \
 	   -framework "./archives/${project}-macOS.xcarchive/Products/Library/Frameworks/${project}.framework" \
 	   -output "./${project}.xcframework"
 
+rm -r HLPLocationManager.xcframework/*/HLPLocationManager.framework/Frameworks
+
+rm ${project}.xcframework.zip
 zip -r ${project}.xcframework.zip ${project}.xcframework

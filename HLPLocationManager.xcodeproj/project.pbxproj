@@ -21,8 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		307E32E42703DAB10058D4F8 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 307E32E32703DAB10058D4F8 /* ZipArchive */; };
-		307E32EA2704332D0058D4F8 /* bleloc in Frameworks */ = {isa = PBXBuildFile; productRef = 307E32E92704332D0058D4F8 /* bleloc */; };
+		30647B2C27063E25000536D2 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 30647B2B27063E25000536D2 /* ZipArchive */; };
+		30647B2F2706408F000536D2 /* bleloc in Frameworks */ = {isa = PBXBuildFile; productRef = 30647B2E2706408F000536D2 /* bleloc */; };
 		A948450C1F31B12000D282F3 /* HLPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A948450B1F31B12000D282F3 /* HLPLocationManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A98269D21F1E0BB4009E8318 /* HLPLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = A99085E11F17740200C1B483 /* HLPLocation.m */; };
 		A98269D61F1E0BB4009E8318 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A99085DC1F176E8F00C1B483 /* Foundation.framework */; };
@@ -84,9 +84,9 @@
 				A989D3B31F60E39D00A89D95 /* CoreMotion.framework in Frameworks */,
 				A989D3B21F60E38B00A89D95 /* CoreLocation.framework in Frameworks */,
 				A989D3AE1F60E2B600A89D95 /* Foundation.framework in Frameworks */,
-				307E32EA2704332D0058D4F8 /* bleloc in Frameworks */,
+				30647B2F2706408F000536D2 /* bleloc in Frameworks */,
 				A989D3B01F60E2C800A89D95 /* MapKit.framework in Frameworks */,
-				307E32E42703DAB10058D4F8 /* ZipArchive in Frameworks */,
+				30647B2C27063E25000536D2 /* ZipArchive in Frameworks */,
 				AFC0C839C7413F8DB1A57219 /* Pods_HLPLocationManager_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -222,8 +222,8 @@
 			);
 			name = "HLPLocationManager-iOS";
 			packageProductDependencies = (
-				307E32E32703DAB10058D4F8 /* ZipArchive */,
-				307E32E92704332D0058D4F8 /* bleloc */,
+				30647B2B27063E25000536D2 /* ZipArchive */,
+				30647B2E2706408F000536D2 /* bleloc */,
 			);
 			productName = HLPLocationManager;
 			productReference = A990859E1F174F2900C1B483 /* HLPLocationManager.framework */;
@@ -258,8 +258,8 @@
 			);
 			mainGroup = A99085941F174F2900C1B483;
 			packageReferences = (
-				307E32E22703DAB10058D4F8 /* XCRemoteSwiftPackageReference "ZipArchive" */,
-				307E32E82704332C0058D4F8 /* XCRemoteSwiftPackageReference "blelocpp" */,
+				30647B2A27063E25000536D2 /* XCRemoteSwiftPackageReference "ZipArchive" */,
+				30647B2D2706408F000536D2 /* XCRemoteSwiftPackageReference "blelocpp" */,
 			);
 			productRefGroup = A990859F1F174F2900C1B483 /* Products */;
 			projectDirPath = "";
@@ -619,15 +619,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		307E32E22703DAB10058D4F8 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
+		30647B2A27063E25000536D2 /* XCRemoteSwiftPackageReference "ZipArchive" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ZipArchive/ZipArchive.git";
+			repositoryURL = "https://github.com/AndrewSB/ZipArchive";
 			requirement = {
-				kind = exactVersion;
-				version = 2.4.2;
+				kind = revision;
+				revision = a6ef3c6c3b3dc30a69936ccd68cbfd3946024818;
 			};
 		};
-		307E32E82704332C0058D4F8 /* XCRemoteSwiftPackageReference "blelocpp" */ = {
+		30647B2D2706408F000536D2 /* XCRemoteSwiftPackageReference "blelocpp" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/hulop/blelocpp";
 			requirement = {
@@ -638,14 +638,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		307E32E32703DAB10058D4F8 /* ZipArchive */ = {
+		30647B2B27063E25000536D2 /* ZipArchive */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 307E32E22703DAB10058D4F8 /* XCRemoteSwiftPackageReference "ZipArchive" */;
+			package = 30647B2A27063E25000536D2 /* XCRemoteSwiftPackageReference "ZipArchive" */;
 			productName = ZipArchive;
 		};
-		307E32E92704332D0058D4F8 /* bleloc */ = {
+		30647B2E2706408F000536D2 /* bleloc */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 307E32E82704332C0058D4F8 /* XCRemoteSwiftPackageReference "blelocpp" */;
+			package = 30647B2D2706408F000536D2 /* XCRemoteSwiftPackageReference "blelocpp" */;
 			productName = bleloc;
 		};
 /* End XCSwiftPackageProductDependency section */
