@@ -227,13 +227,13 @@ static HLPLocationManager *instance;
         _tempMonitorIntervalMS = _parameters.locationStatusMonitorParameters.monitorIntervalMS;
         [processQueue addOperationWithBlock:^{
             // set status monitoring interval inf
-            _parameters.locationStatusMonitorParameters.monitorIntervalMS = 3600*1000*24;
+            self->_parameters.locationStatusMonitorParameters.monitorIntervalMS = 3600*1000*24;
         }];
     }
     else {
         [processQueue addOperationWithBlock:^{
             // set status monitoring interval as default
-            _parameters.locationStatusMonitorParameters.monitorIntervalMS = _tempMonitorIntervalMS;
+            self->_parameters.locationStatusMonitorParameters.monitorIntervalMS = self->_tempMonitorIntervalMS;
         }];
     }
 }
@@ -412,8 +412,8 @@ static HLPLocationManager *instance;
 - (void)makeStatusUnknown
 {
     [processQueue addOperationWithBlock:^{
-        if (localizer) {
-            localizer->overwriteLocationStatus(Status::UNKNOWN);
+        if (self->localizer) {
+            self->localizer->overwriteLocationStatus(Status::UNKNOWN);
         }
     }];
 }
@@ -479,7 +479,7 @@ static HLPLocationManager *instance;
     }
     
     [processQueue addOperationWithBlock:^{
-        double h = (heading - [anchor[@"rotate"] doubleValue])/180*M_PI;
+        double h = (heading - [self->anchor[@"rotate"] doubleValue])/180*M_PI;
         double x = sin(h);
         double y = cos(h);
         h = atan2(y,x);
@@ -488,11 +488,11 @@ static HLPLocationManager *instance;
         loc::GlobalState<Location> global(location);
         global.lat(loc.lat);
         global.lng(loc.lng);
-        location = localizer->latLngConverter()->globalToLocal(global);
+        location = self->localizer->latLngConverter()->globalToLocal(global);
         
         loc::Pose newPose(location);
         if(isnan(loc.floor)){
-            newPose.floor(currentFloor);
+            newPose.floor(self->currentFloor);
         }else{
             newPose.floor(round(loc.floor));
         }
@@ -506,9 +506,9 @@ static HLPLocationManager *instance;
         loc::Pose stdevPose;
         
         double std_dev = loc.accuracy;
-        stdevPose.x(std_dev).y(std_dev).orientation(currentOrientationAccuracy/180*M_PI);
+        stdevPose.x(std_dev).y(std_dev).orientation(self->currentOrientationAccuracy/180*M_PI);
         try {
-            localizer->resetStatus(newPose, stdevPose);
+            self->localizer->resetStatus(newPose, stdevPose);
         } catch(const std::exception& ex) {
             std::cout << ex.what() << std::endl;
             //error?
@@ -539,7 +539,7 @@ static HLPLocationManager *instance;
     if (newHeading.headingAccuracy >= 0) {
         if (!localizer->tracksOrientation()) {
             [processQueue addOperationWithBlock:^{
-                if (!_isActive) {
+                if (!self->_isActive) {
                     return;
                 }
                 [self directionUpdated:newHeading.magneticHeading withAccuracy:newHeading.headingAccuracy];
@@ -554,13 +554,13 @@ static HLPLocationManager *instance;
     };
     
     [processQueue addOperationWithBlock:^{
-        if (!_isActive) {
+        if (!self->_isActive) {
             return;
         }
         loc::Heading heading = convertCLHeading(newHeading);
         // putHeading
         try {
-            localizer->putHeading(heading);
+            self->localizer->putHeading(heading);
         }catch(const std::exception& ex) {
             std::cout << ex.what() << std::endl;
         }
@@ -828,17 +828,17 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     isMapLoading = YES;
     
     [[[NSOperationQueue alloc] init] addOperationWithBlock:^{
-        NSInputStream *stream = [NSInputStream inputStreamWithFileAtPath:modelPath];
+        NSInputStream *stream = [NSInputStream inputStreamWithFileAtPath:self->modelPath];
         [stream open];
         NSDictionary *json = [NSJSONSerialization JSONObjectWithStream:stream options:0 error:nil];
-        anchor = json[@"anchor"];
+        self->anchor = json[@"anchor"];
     }];
 
     [processQueue addOperationWithBlock:^{
         double s = [[NSDate date] timeIntervalSince1970];
         
         try {
-            localizer->setModel([modelPath cStringUsingEncoding:NSUTF8StringEncoding], [workingDir cStringUsingEncoding:NSUTF8StringEncoding]);
+            self->localizer->setModel([self->modelPath cStringUsingEncoding:NSUTF8StringEncoding], [self->workingDir cStringUsingEncoding:NSUTF8StringEncoding]);
             double e = [[NSDate date] timeIntervalSince1970];
             std::cout << (e-s)*1000 << " ms for setModel" << std::endl;
         } catch(LocException& ex) {
@@ -861,24 +861,24 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
             return;
         }
         
-        auto& beacons = localizer->dataStore->getBLEBeacons();
+        auto& beacons = self->localizer->dataStore->getBLEBeacons();
         
-        uuids = [[NSMutableSet alloc] init];
+        self->uuids = [[NSMutableSet alloc] init];
         NSMutableDictionary *dict = [@{} mutableCopy];
         for(auto it = beacons.begin(); it != beacons.end(); it++) {
             NSString *uuidStr = [NSString stringWithUTF8String: it->uuid().c_str()];
             if (!dict[uuidStr]) {
                 NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidStr];
                 dict[uuidStr] = uuid;
-                [uuids addObject:uuid];
+                [self->uuids addObject:uuid];
                 
                 CLBeaconRegion *region = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:uuidStr];
                 
-                [_clLocationManager startRangingBeaconsInRegion:region];
+                [self->_clLocationManager startRangingBeaconsInRegion:region];
             }
         }
 
-        isMapLoaded = YES;
+        self->isMapLoaded = YES;
     }];
 }
 
@@ -926,20 +926,20 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     
     [motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryZVertical
                                                        toQueue:processQueue withHandler:^(CMDeviceMotion * _Nullable motion, NSError * _Nullable error) {
-        if (!_isActive || !_isSensorEnabled) {
+        if (!self->_isActive || !self->_isSensorEnabled) {
             return;
         }
         try {
             Attitude attitude((uptime+motion.timestamp)*1000,
-                              motion.attitude.pitch, motion.attitude.roll, motion.attitude.yaw + offsetYaw);
+                              motion.attitude.pitch, motion.attitude.roll, motion.attitude.yaw + self->offsetYaw);
             
-            localizer->putAttitude(attitude);
+            self->localizer->putAttitude(attitude);
         } catch(const std::exception& ex) {
             std::cout << ex.what() << std::endl;
         }
     }];
     [motionManager startAccelerometerUpdatesToQueue: processQueue withHandler:^(CMAccelerometerData * _Nullable acc, NSError * _Nullable error) {
-        if (!_isActive || !_isSensorEnabled) {
+        if (!self->_isActive || !self->_isSensorEnabled) {
             return;
         }
         Acceleration acceleration((uptime+acc.timestamp)*1000,
@@ -952,7 +952,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
 //            } else {
 //                localizer->disableAcceleration(true,acceleration.timestamp());
 //            }
-            localizer->putAcceleration(acceleration);
+            self->localizer->putAcceleration(acceleration);
         } catch(const std::exception& ex) {
             std::cout << ex.what() << std::endl;
         }
@@ -961,7 +961,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     
     if(altimeter){
         [altimeter startRelativeAltitudeUpdatesToQueue: processQueue withHandler:^(CMAltitudeData *altitudeData, NSError *error) {
-            if (!_isActive || !_isSensorEnabled) {
+            if (!self->_isActive || !self->_isSensorEnabled) {
                 return;
             }
             NSNumber* relAlt=  altitudeData.relativeAltitude;
@@ -971,7 +971,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
             Altimeter alt(ts, [relAlt doubleValue], [pressure doubleValue]);
             // putAltimeter
             try {
-                localizer->putAltimeter(alt);
+                self->localizer->putAltimeter(alt);
             }catch(const std::exception& ex) {
                 std::cout << ex.what() << std::endl;
             }
@@ -1010,7 +1010,7 @@ void functionCalledToLog(void *inUserData, string text)
 - (void)_logString:(NSString*)text {
     if ([_delegate respondsToSelector:@selector(locationManager:didLogText:)]) {
         [loggingQueue addOperationWithBlock:^{
-            [_delegate locationManager:self didLogText:text];
+            [self->_delegate locationManager:self didLogText:text];
         }];
     }
 }
@@ -1202,13 +1202,13 @@ int dcount = 0;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
             dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
                 
-                double lat = currentLocation.lat; //[currentLocation[@"lat"] doubleValue];
-                double lng = currentLocation.lng; //[currentLocation[@"lng"] doubleValue];
-                double floor = currentFloor; //[currentLocation[@"floor"] doubleValue];
-                double ori = currentMagneticHeading.trueHeading;
-                double oriacc = currentMagneticHeading.headingAccuracy;
-                [processQueue addOperationWithBlock:^{
-                    double heading = (ori - [anchor[@"rotate"] doubleValue])/180*M_PI;
+                double lat = self->currentLocation.lat; //[currentLocation[@"lat"] doubleValue];
+                double lng = self->currentLocation.lng; //[currentLocation[@"lng"] doubleValue];
+                double floor = self->currentFloor; //[currentLocation[@"floor"] doubleValue];
+                double ori = self->currentMagneticHeading.trueHeading;
+                double oriacc = self->currentMagneticHeading.headingAccuracy;
+                [self->processQueue addOperationWithBlock:^{
+                    double heading = (ori - [self->anchor[@"rotate"] doubleValue])/180*M_PI;
                     double x = sin(heading);
                     double y = cos(heading);
                     heading = atan2(y,x);
@@ -1218,7 +1218,7 @@ int dcount = 0;
                     global.lat(lat);
                     global.lng(lng);
                     
-                    location = localizer->latLngConverter()->globalToLocal(global);
+                    location = self->localizer->latLngConverter()->globalToLocal(global);
                     
                     loc::Pose newPose(location);
                     newPose.floor(round(floor));
@@ -1231,9 +1231,9 @@ int dcount = 0;
                     stdevPose.x(1).y(1).orientation(oriacc/180*M_PI);
                     //localizer->resetStatus(newPose, stdevPose, 0.3);
                     
-                    double x1 = sin((ori-currentOrientation)/180*M_PI);
-                    double y1 = cos((ori-currentOrientation)/180*M_PI);
-                    offsetYaw = atan2(y1,x1);
+                    double x1 = sin((ori-self->currentOrientation)/180*M_PI);
+                    double y1 = cos((ori-self->currentOrientation)/180*M_PI);
+                    self->offsetYaw = atan2(y1,x1);
                 }];
             });
             validHeading = YES;
@@ -1408,7 +1408,7 @@ int dcount = 0;
 - (void)setRejectDistance:(double)rejectDistance { _property->rejectDistance(rejectDistance); }
 - (double)rejectDistance { return _property->rejectDistance(); }
 
-- (void)setDurationAllowForceFloorUpdate:(long)durationAllowForceFloorUpdate { _property->durationAllowForceFloorUpdate(durationAllowForceFloorUpdate); }
+- (void)setDurationAllowForceFloorUpdate:(long)durationAllowForceFloorUpdate { _property->durationAllowForceFloorUpdate((int)durationAllowForceFloorUpdate); }
 - (long)durationAllowForceFloorUpdate { return _property->durationAllowForceFloorUpdate(); }
 @end
 
@@ -1439,10 +1439,10 @@ int dcount = 0;
 - (void)setStdev2DExitLocating:(double)stdev2DExitLocating { _property->stdev2DExitLocating(stdev2DExitLocating); }
 - (double)stdev2DExitLocating { return _property->stdev2DExitLocating(); }
 
-- (void)setMonitorIntervalMS:(long)monitorIntervalMS { _property->monitorIntervalMS(monitorIntervalMS); }
+- (void)setMonitorIntervalMS:(long)monitorIntervalMS { _property->monitorIntervalMS((int)monitorIntervalMS); }
 - (long)monitorIntervalMS { return _property->monitorIntervalMS(); }
 
-- (void)setUnstableLoop:(long)unstableLoop { _property->unstableLoop(unstableLoop); }
+- (void)setUnstableLoop:(long)unstableLoop { _property->unstableLoop((int)unstableLoop); }
 - (long)unstableLoop { return _property->unstableLoop(); }
 
 //- (void)setDisableStatusChangeOnHeightChanging:(BOOL)disableStatusChangeOnHeightChanging { _property->disableStatusChangeOnHeightChanging(disableStatusChangeOnHeightChanging); }

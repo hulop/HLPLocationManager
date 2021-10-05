@@ -68,7 +68,7 @@ static HLPLocation* replayResetRequestLocation;
         [self _stop];
         [NSThread sleepForTimeInterval:1.0];
         [self start];
-        while(!isMapLoaded && isPlaying) {
+        while(!self->isMapLoaded && isPlaying) {
             [NSThread sleepForTimeInterval:0.1];
         }
         
@@ -232,10 +232,10 @@ static HLPLocation* replayResetRequestLocation;
                         int da = stoi(values.at(1));
                         long timestamp = stol(values.back());
                         if(da==1){
-                            _isAccelerationEnabled = NO; // disable
+                            self->_isAccelerationEnabled = NO; // disable
                             self.localizer->disableAcceleration(true, timestamp);
                         }else{
-                            _isAccelerationEnabled = YES; // enable
+                            self->_isAccelerationEnabled = YES; // enable
                             self.localizer->disableAcceleration(false, timestamp);
                         }
                         if (bShowSensorLog) {
@@ -319,7 +319,7 @@ static HLPLocation* replayResetRequestLocation;
         }
         [[NSNotificationCenter defaultCenter] postNotificationName:LOG_REPLAY_PROGRESS object:self userInfo:@{@"progress":@(total),@"total":@(total)}];
         isPlaying = NO;
-        _isSensorEnabled = YES;
+        self->_isSensorEnabled = YES;
 
         [self restart];
     });
