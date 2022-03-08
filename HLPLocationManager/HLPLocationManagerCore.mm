@@ -760,7 +760,7 @@ didFinishDeferredUpdatesWithError:(nullable NSError *)error
     _isLoading = YES;
     if (_isActive == YES) {
         if (valid == NO) {
-            [self stop];
+            [self _stop];
         } else {
             return;
         }
