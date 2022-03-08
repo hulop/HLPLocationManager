@@ -46,17 +46,22 @@ double(^normalize)(double) = ^(double deg) {
     return self;
 }
 
++ (BOOL)supportsSecureCoding
+{
+    return YES;
+}
+
 - (instancetype) initWithCoder:(NSCoder *)aDecoder
 {
     self = [super init];
-    _lat = [[aDecoder decodeObjectForKey:@"lat"] doubleValue];
-    _lng = [[aDecoder decodeObjectForKey:@"lng"] doubleValue];
-    _accuracy = [[aDecoder decodeObjectForKey:@"accuracy"] doubleValue];
-    _floor = [[aDecoder decodeObjectForKey:@"floor"] doubleValue];
-    _speed = [[aDecoder decodeObjectForKey:@"speed"] doubleValue];
-    _orientation = [[aDecoder decodeObjectForKey:@"orientation"] doubleValue];
-    _orientationAccuracy = [[aDecoder decodeObjectForKey:@"orientationAccuracy"] doubleValue];
-    _params = [aDecoder decodeObjectForKey:@"params"];
+    _lat = [[aDecoder decodeObjectOfClass:NSNumber.class forKey:@"lat"] doubleValue];
+    _lng = [[aDecoder decodeObjectOfClass:NSNumber.class forKey:@"lng"] doubleValue];
+    _accuracy = [[aDecoder decodeObjectOfClass:NSNumber.class forKey:@"accuracy"] doubleValue];
+    _floor = [[aDecoder decodeObjectOfClass:NSNumber.class forKey:@"floor"] doubleValue];
+    _speed = [[aDecoder decodeObjectOfClass:NSNumber.class forKey:@"speed"] doubleValue];
+    _orientation = [[aDecoder decodeObjectOfClass:NSNumber.class forKey:@"orientation"] doubleValue];
+    _orientationAccuracy = [[aDecoder decodeObjectOfClass:NSNumber.class forKey:@"orientationAccuracy"] doubleValue];
+    _params = [aDecoder decodeObjectOfClass:NSDictionary.class forKey:@"params"];
     return self;
 }
 
